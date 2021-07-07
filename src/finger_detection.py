@@ -1,4 +1,4 @@
-import math
+from math import floor
 import cv2
 import mediapipe.python.solutions.hands as mp_hands
 import mediapipe.python.solutions.drawing_utils as mp_drawing
@@ -6,10 +6,22 @@ import mediapipe.python.solutions.drawing_utils as mp_drawing
 import main
 
 
-def normalized_to_pixel_coordinates(x: float, y: float, width: int, height: int):
-    # TODO Check boundaries
-    x_px = min(math.floor(x * width), width - 1)
-    y_px = min(math.floor(y * height), height - 1)
+def validate_coordinates(normalized_coordinates: (float, float)):
+    x, y = normalized_coordinates
+    return 1 > x >= 0 and 0 <= y < 1
+
+
+def normalized_to_pixel_coordinates(normalized_coordinates: (float, float), size: (int, int)):
+    valid_status = validate_coordinates(normalized_coordinates)
+    if not valid_status:
+        return False
+
+    normalized_x, normalized_y = normalized_coordinates
+    width, height = size
+
+    x_px = floor(normalized_x * width)
+    y_px = floor(normalized_y * height)
+
     return x_px, y_px
 
 
@@ -32,7 +44,7 @@ def launch_detection_on_capture(capture):
             # Prepare for drawing on the image.
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            width, height, _ = image.shape
+            image_size = (image.shape[0], image.shape[1])
 
             # If hands were found
             if results.multi_hand_landmarks:
@@ -58,17 +70,19 @@ def launch_detection_on_capture(capture):
                 for finger, coords in normalized_finger_coords.items():
                     image_finger_coords[finger] = (
                         None if coords is None
-                        else normalized_to_pixel_coordinates(coords.x, coords.y, width, height)
+                        else normalized_to_pixel_coordinates((coords.x, coords.y),
+                                                             image_size)
                     )
-                print(image_finger_coords)
 
-                main.move_cursor_on_screen(normalized_finger_coords)
+                if all(image_finger_coords.values()):
+                    main.move_cursor_on_screen(normalized_finger_coords)
 
             # Show image on the screen
             cv2.imshow('MediaPipe Hands', image)
 
             if cv2.waitKey(30) == ord("q"):
                 break
+
 
 def launch_detection_on_webcam():
     capture = cv2.VideoCapture(0)
