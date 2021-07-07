@@ -3,6 +3,8 @@ import cv2
 import mediapipe.python.solutions.hands as mp_hands
 import mediapipe.python.solutions.drawing_utils as mp_drawing
 
+import main
+
 
 def normalized_to_pixel_coordinates(x: float, y: float, width: int, height: int):
     # TODO Check boundaries
@@ -74,7 +76,3 @@ def launch_detection_on_webcam():
     launch_detection_on_capture(capture)
 
     capture.release()
-
-
-if __name__ == '__main__':
-    launch_detection_on_webcam()
