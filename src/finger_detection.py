@@ -6,12 +6,12 @@ import mediapipe.python.solutions.drawing_utils as mp_drawing
 import main
 
 
-def validate_coordinates(normalized_coordinates: (float, float)):
+def validate_coordinates(normalized_coordinates):
     x, y = normalized_coordinates
     return 1 > x >= 0 and 0 <= y < 1
 
 
-def normalized_to_pixel_coordinates(normalized_coordinates: (float, float), size: (int, int)):
+def normalized_to_pixel_coordinates(normalized_coordinates, size):
     valid_status = validate_coordinates(normalized_coordinates)
     if not valid_status:
         return False
