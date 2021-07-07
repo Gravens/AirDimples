@@ -62,6 +62,8 @@ def launch_detection_on_capture(capture):
                     )
                 print(image_finger_coords)
 
+                main.move_cursor_on_screen(normalized_finger_coords)
+
             # Show image on the screen
             cv2.imshow('MediaPipe Hands', image)
 
