@@ -1,5 +1,5 @@
 # Air Dimples
-Track finger movements with your webcam to control the cursor
+Just Dance solo or compete with your friends in dance battle!
 
 This project is made for [Intel Computer Vision Summer Camp 2021](https://github.com/itlab-vision/CV-SUMMER-CAMP-2021)
 
