@@ -12,14 +12,21 @@ def launch_detection_on_capture(capture, args):
     start_time = perf_counter()
 
     ret, frame = capture.read()
+    if not ret:
+        raise IOError('Can not read frame!')
+
+    frame = cv2.resize(frame, (args["net_input_size"], args["net_input_size"]), interpolation=cv2.INTER_AREA)
+
     model = models.HpeAssociativeEmbedding(ie, args["model_path"],
                                            aspect_ratio=frame.shape[1] / frame.shape[0],
-                                           target_size=None, prob_threshold=0.1)
+                                           target_size=args["net_input_size"], prob_threshold=0.1)
+
     hpe_pipeline = AsyncPipeline(ie, model, plugin_config, device=args["device"], max_num_requests=0)
 
     hpe_pipeline.submit_data(frame, 0, {'frame': frame, 'start_time': start_time})
     next_frame_id = 1
     next_frame_id_to_show = 0
+
 
     while True:
         if hpe_pipeline.callback_exceptions:
@@ -30,6 +37,7 @@ def launch_detection_on_capture(capture, args):
         if results:
             (poses, scores), frame_meta = results
             frame = frame_meta['frame']
+            frame = cv2.resize(frame, (args["net_input_size"], args["net_input_size"]), interpolation=cv2.INTER_AREA)
             if len(poses) > 0:
                 for pose in poses:
                     points = pose[:, :2].astype(np.int32)
@@ -39,13 +47,16 @@ def launch_detection_on_capture(capture, args):
 
             start_time = frame_meta['start_time']
             next_frame_id_to_show += 1
-            cv2.imshow("rwer", frame)
+            cv2.imshow("rwer", cv2.resize(frame, (1080, 1080), interpolation=cv2.INTER_AREA))
             continue
 
         if hpe_pipeline.is_ready():
             # Get new image/frame
             start_time = perf_counter()
             ret, frame = capture.read()
+            if not ret:
+                break
+            frame = cv2.resize(frame, (args["net_input_size"], args["net_input_size"]), interpolation=cv2.INTER_AREA)
             if frame is None:
                 break
 
@@ -57,7 +68,7 @@ def launch_detection_on_capture(capture, args):
             # Wait for empty request
             hpe_pipeline.await_any()
 
-        if cv2.waitKey(100) == ord("q"):
+        if cv2.waitKey(30) == ord("q"):
             break
 
 
@@ -68,10 +79,12 @@ def launch_detection_on_webcam(args):
 
     launch_detection_on_capture(capture, args)
 
+    cv2.destroyAllWindows()
     capture.release()
 
 
 if __name__ == "__main__":
     launch_detection_on_webcam({"cap_source": 0,
                                 "model_path": "pose_utils/human-pose-estimation-0007.xml",
-                                "device": "CPU"})
+                                "device": "CPU",
+                                "net_input_size": 256})
