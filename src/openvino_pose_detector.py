@@ -96,7 +96,7 @@ def launch_detection_on_webcam(args):
 
 
 if __name__ == "__main__":
-    launch_detection_on_webcam({"cap_source": "people-detection.mp4",
+    launch_detection_on_webcam({"cap_source": 0,
                                 "model_path": "pose_utils/human-pose-estimation-0007.xml",
                                 "device": "CPU",
-                                "net_input_width": 516})
+                                "net_input_width": 512})
