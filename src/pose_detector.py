@@ -11,7 +11,7 @@ def launch_detection_on_capture(capture):
     pose_instance = pose.Pose()
     ret, frame = capture.read()
 
-    play = SoloPlay(frame.shape, circle_radius=25, interval=1)
+    play = SoloPlay(frame.shape, circle_radius=25, interval=1, max_items=20)
 
     while capture.isOpened():
         ret, image = capture.read()
@@ -28,15 +28,15 @@ def launch_detection_on_capture(capture):
 
         if results.pose_landmarks:
             mp_drawing.draw_landmarks(image, results.pose_landmarks, pose.POSE_CONNECTIONS)
-        play.process(image, results=results)
 
-        if cv2.waitKey(30) == ord("q"):
+        game_status = play.process(image, results=results)
+
+        if cv2.waitKey(30) == ord("q") or not game_status:
             break
 
 
-
 def launch_detection_on_webcam():
-    capture = cv2.VideoCapture("people-detection.mp4")
+    capture = cv2.VideoCapture(0)
     launch_detection_on_capture(capture)
 
     capture.release()
