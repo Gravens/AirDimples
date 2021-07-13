@@ -18,7 +18,7 @@ class SoloPlay:
             "R_foot": (27, 31, 29)
         }
         # colors[0] - hand, colors[1] - leg
-        self.colors = [(27, 36, 122), (10, 77, 247)]
+        self.colors = [(122, 36, 27), (15, 255, 235)]
         self.circles = []
         self.score = 0
 
@@ -41,7 +41,9 @@ class SoloPlay:
 
     def circle_includes(self, circle, body_part, landmarks):
         for index in self.body_part_indexes[body_part]:
-            if (landmarks[index].x * self.w_size[1] - circle["center"][0])**2 + (landmarks[index].y * self.w_size[0] - circle["center"][1])**2 <= self.circle_radius:
+            if body_part == "R_hand":
+                print((landmarks[index].x * self.w_size[1] - circle["center"][0])**2 + (landmarks[index].y * self.w_size[0] - circle["center"][1])**2)
+            if (landmarks[index].x * self.w_size[1] - circle["center"][0])**2 + (landmarks[index].y * self.w_size[0] - circle["center"][1])**2 <= self.circle_radius**2:
                 side, part = body_part.split("_")
                 need_part = "hand" if circle["color"] == self.colors[0] else "foot"
                 if side == circle["side"] and part == need_part:
