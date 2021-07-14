@@ -6,9 +6,10 @@ from pose_utils import models
 from openvino.inference_engine import IECore
 
 
-def draw_poses(poses, frame):
+def draw_poses(poses, frame, resize_ratios=(1, 1)):
     for pose in poses:
-        points = pose[:, :2].astype(np.int32)
+        # Take only 2 first columns, containing plane coords
+        points = (pose[:, :2] * resize_ratios).astype(np.int32)
         # Draw joints.
         for p in points:
             cv2.circle(frame, tuple(p), 1, (0, 255, 0), 2)
@@ -34,29 +35,27 @@ def launch_detection_on_capture(capture, args):
                                            target_size=target_size, prob_threshold=0.1)
     hpe_pipeline = AsyncPipeline(ie, model, plugin_config, device=args["device"], max_num_requests=1)
 
-    # cv2.resize() takes (width, height) as new size,
-    # but img.shape has (height, width) format
     net_input_size = (model.w, model.h)
-    show_frame_size = (1080, floor(model.h * 1080 / model.w))  # width height
+    resize_ratios = (frame.shape[1] / net_input_size[0]), (frame.shape[0] / net_input_size[1])
 
     while True:
         ret, frame = capture.read()
         if not ret:
             break
-        frame = cv2.resize(frame, net_input_size, interpolation=cv2.INTER_AREA)
+        resized_frame = cv2.resize(frame, net_input_size, interpolation=cv2.INTER_AREA)
 
-        hpe_pipeline.submit_data(frame, 0, {'frame': frame, 'start_time': 0})
+        hpe_pipeline.submit_data(resized_frame, 0, {'frame': resized_frame, 'start_time': 0})
         hpe_pipeline.await_any()
 
         results = hpe_pipeline.get_result(0)
         if results:
             (poses, scores), frame_meta = results
             if len(poses) > 0:
-                draw_poses(poses, frame)
+                draw_poses(poses, frame, resize_ratios)
 
-        cv2.imshow("Show", cv2.resize(frame, show_frame_size, interpolation=cv2.INTER_AREA))
+        cv2.imshow("Just Dance", frame)
 
-        if cv2.waitKey(30) == ord("q"):
+        if cv2.waitKey(1) == ord("q"):
             break
 
 
