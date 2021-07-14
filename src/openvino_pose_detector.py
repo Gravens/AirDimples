@@ -53,6 +53,7 @@ def launch_detection_on_capture(capture, args):
             if len(poses) > 0:
                 draw_poses(poses, frame, resize_ratios)
 
+        frame = cv2.flip(frame, 1)
         cv2.imshow("Just Dance", frame)
 
         if cv2.waitKey(1) == ord("q"):
