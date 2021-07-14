@@ -39,16 +39,14 @@ def launch_detection_on_capture(capture, args):
     net_input_size = (model.w, model.h)
     show_frame_size = (1080, floor(model.h * 1080 / model.w))  # width height
 
-    process_flag = True
     while True:
         ret, frame = capture.read()
         if not ret:
             break
         frame = cv2.resize(frame, net_input_size, interpolation=cv2.INTER_AREA)
 
-        if process_flag:
-            hpe_pipeline.submit_data(frame, 0, {'frame': frame, 'start_time': 0})
-            hpe_pipeline.await_any()
+        hpe_pipeline.submit_data(frame, 0, {'frame': frame, 'start_time': 0})
+        hpe_pipeline.await_any()
 
         results = hpe_pipeline.get_result(0)
         if results:
@@ -56,7 +54,6 @@ def launch_detection_on_capture(capture, args):
             if len(poses) > 0:
                 draw_poses(poses, frame)
 
-        process_flag = not process_flag
         cv2.imshow("Show", cv2.resize(frame, show_frame_size, interpolation=cv2.INTER_AREA))
 
         if cv2.waitKey(30) == ord("q"):
