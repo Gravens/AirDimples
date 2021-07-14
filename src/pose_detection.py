@@ -1,6 +1,7 @@
 import cv2
 from mediapipe.python.solutions import pose
 import mediapipe.python.solutions.drawing_utils as mp_drawing
+from gameplay import SoloGame
 
 
 def launch_detection_on_capture(capture):
@@ -8,6 +9,10 @@ def launch_detection_on_capture(capture):
         raise IOError('Camera is not accessible')
 
     pose_instance = pose.Pose()
+    ret, frame = capture.read()
+
+    game = SoloGame(frame.shape, circle_radius=50, interval=10, max_items=20)
+
     while capture.isOpened():
         ret, image = capture.read()
         if not ret:
@@ -22,12 +27,11 @@ def launch_detection_on_capture(capture):
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         if results.pose_landmarks:
-            print(results.pose_landmarks, '\n\n\n')
             mp_drawing.draw_landmarks(image, results.pose_landmarks, pose.POSE_CONNECTIONS)
 
-        cv2.imshow('MediaPipe body', image)
+        game_status = game.process(image, results=results)
 
-        if cv2.waitKey(30) == ord("q"):
+        if cv2.waitKey(30) == ord("q") or not game_status:
             break
 
 
