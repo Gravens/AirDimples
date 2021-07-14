@@ -2,7 +2,7 @@ import cv2
 import mediapipe.python.solutions.hands as mp_hands
 import mediapipe.python.solutions.drawing_utils as mp_drawing
 
-import main
+import cursorman
 from utils import denormalize_coordinates
 
 
@@ -55,7 +55,7 @@ def launch_detection_on_capture(capture):
                     )
 
                 if all(image_finger_coords.values()):
-                    main.move_cursor_on_screen(normalized_finger_coords)
+                    cursorman.move_cursor_on_screen(normalized_finger_coords)
 
             # Show image on the screen
             cv2.imshow('MediaPipe Hands', image)
@@ -72,3 +72,7 @@ def launch_detection_on_webcam():
     launch_detection_on_capture(capture)
 
     capture.release()
+
+
+if __name__ == '__main__':
+    launch_detection_on_webcam()
