@@ -3,7 +3,7 @@ from time import time
 from random import randint
 
 
-class SoloPlay:
+class SoloGame:
     def __init__(self, w_size, circle_radius=20, interval=1, max_items=4):
         self.w_size = w_size
         self.circle_radius = circle_radius
