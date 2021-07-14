@@ -3,7 +3,7 @@ from time import time
 from random import randint
 
 
-class SoloPlay:
+class SoloGame:
     def __init__(self, w_size, circle_radius=20, interval=1, max_items=4):
         self.w_size = w_size
         self.circle_radius = circle_radius
@@ -41,9 +41,12 @@ class SoloPlay:
 
     def circle_includes(self, circle, body_part, landmarks):
         for index in self.body_part_indexes[body_part]:
+            # TODO Rename variables
+            lxs = (landmarks[index].x * self.w_size[1] - circle["center"][0])**2
+            lys = (landmarks[index].y * self.w_size[0] - circle["center"][1])**2
             if body_part == "R_hand":
-                print((landmarks[index].x * self.w_size[1] - circle["center"][0])**2 + (landmarks[index].y * self.w_size[0] - circle["center"][1])**2)
-            if (landmarks[index].x * self.w_size[1] - circle["center"][0])**2 + (landmarks[index].y * self.w_size[0] - circle["center"][1])**2 <= self.circle_radius**2:
+                print(lxs + lys)
+            if lxs + lys <= self.circle_radius**2:
                 side, part = body_part.split("_")
                 need_part = "hand" if circle["color"] == self.colors[0] else "foot"
                 if side == circle["side"] and part == need_part:
@@ -73,7 +76,11 @@ class SoloPlay:
     def draw_circles(self, frame):
         for item in self.circles:
             cv2.circle(frame, item["center"], self.circle_radius, item["color"], 2)
-            cv2.putText(frame, item["side"], (item["center"][0] - 4, item["center"][1] + 5), cv2.FONT_ITALIC, 0.55, item["color"], 2)
-
-
-
+            cv2.putText(
+                frame,
+                item["side"],
+                (item["center"][0] - 4, item["center"][1] + 5),
+                cv2.FONT_ITALIC, 0.55,
+                item["color"],
+                2
+            )
