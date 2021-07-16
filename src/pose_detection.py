@@ -11,7 +11,7 @@ def launch_detection_on_capture(capture):
     pose_instance = pose.Pose()
     ret, frame = capture.read()
 
-    game = SoloGame(frame.shape, circle_radius=50, interval=10, max_items=20)
+    game = SoloGame(frame.shape, circle_radius=50, interval=2, max_items=20)
 
     while capture.isOpened():
         ret, image = capture.read()
@@ -27,7 +27,8 @@ def launch_detection_on_capture(capture):
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         if results.pose_landmarks:
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, pose.POSE_CONNECTIONS)
+            mp_drawing.draw_landmarks(image, results.pose_landmarks, pose.
+                                      POSE_CONNECTIONS)
 
         game_status = game.process(image, results=results)
 
