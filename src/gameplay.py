@@ -110,10 +110,9 @@ class SoloGame:
         copy_vectors = self.vectors.copy()
         shuffle(copy_vectors)
         for dx, dy in copy_vectors:
-            new_center = (center[0] + dx * self.speed, center[1] + dy * self.speed)
-            valid_center = self.circle_in_area(new_center)
+            future_center = (center[0] + dx * self.speed, center[1] + dy * self.speed)
+            valid_center = self.circle_in_area(future_center)
             if valid_center:
-                center = new_center
                 last_vector = self.vectors.index((dx, dy))
                 break
 
