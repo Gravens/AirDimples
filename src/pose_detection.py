@@ -10,8 +10,7 @@ def launch_detection_on_capture(capture):
 
     pose_instance = pose.Pose()
     ret, frame = capture.read()
-
-    game = SoloGame(frame.shape, circle_radius=50, interval=2, max_items=20)
+    game = SoloGame(frame.shape, circle_radius=50, interval=3, max_items=20)
 
     while capture.isOpened():
         ret, image = capture.read()
@@ -32,7 +31,7 @@ def launch_detection_on_capture(capture):
 
         game_status = game.process(image, results=results)
 
-        if cv2.waitKey(30) == ord("q") or not game_status:
+        if cv2.waitKey(1) == ord("q") or not game_status:
             break
 
 
