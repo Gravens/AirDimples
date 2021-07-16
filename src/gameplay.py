@@ -94,10 +94,8 @@ class SoloGame:
 
         a = randint(self.ellipse_amax // 2, self.ellipse_amax)
         b = randint(self.ellipse_amax // 2, self.ellipse_amax)
-        print(self.circle_radius + a * 2, self.w_size[1] - a * 2 - self.circle_radius, self.circle_radius + b * 2, self.w_size[0] - b * 2 - self.circle_radius)
         center = (randint(self.circle_radius + a * 2, self.w_size[1] - a * 2 - self.circle_radius),
                   randint(self.circle_radius + b * 2, self.w_size[0] - b * 2 - self.circle_radius))
-
         equation = lambda x: b * (1 - ((x - a)**2)/(a**2))**(1/2)
         color = (0, 0, 255)
         # 1 - right 2 - left
@@ -160,8 +158,6 @@ class SoloGame:
                 self.packmans.remove(item)
 
     def add_packman(self):
-        if len(self.packmans) == 1:
-            return
         center = (randint(self.circle_radius, self.w_size[1] - self.circle_radius),
                   randint(self.circle_radius, self.w_size[0] - self.circle_radius))
         color = (0, 0, 255)
