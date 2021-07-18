@@ -37,7 +37,7 @@ def launch_detection_on_capture(capture):
             mp_drawing.draw_landmarks(image, results.pose_landmarks, pose.
                                       POSE_CONNECTIONS)
 
-        game_status = game.process(image, results=results)
+        game_status = game.process(image, landmarks=results.pose_landmarks.landmark)
 
         if cv2.waitKey(1) == ord("q") or not game_status:
             break

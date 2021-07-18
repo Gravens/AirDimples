@@ -20,11 +20,11 @@ class SoloIntensiveFastAim:
 
         self.score = 0
 
-    def process(self, frame, results=None):
-        if results and results.pose_landmarks:
-            self.pop_out_circles(results.pose_landmarks.landmark)
-            self.pop_out_packmans(results.pose_landmarks.landmark)
-            self.pop_out_ellipse_curves(results.pose_landmarks.landmark)
+    def process(self, frame, landmarks=None):
+        if landmarks:
+            self.pop_out_circles(landmarks)
+            self.pop_out_packmans(landmarks)
+            self.pop_out_ellipse_curves(landmarks)
 
         cur_time = time()
         if cur_time - self.last_draw_timestamp > self.interval:
@@ -124,12 +124,12 @@ class SoloClassic:
 
         self.score = 0
 
-    def process(self, frame, results=None):
-        if results and results.pose_landmarks:
+    def process(self, frame, landmarks=None):
+        if landmarks:
             cur_time = time()
-            self.pop_out_circles(results.pose_landmarks.landmark, cur_time)
-            self.pop_out_packmans(results.pose_landmarks.landmark, cur_time)
-            self.pop_out_ellipse_curves(results.pose_landmarks.landmark, cur_time)
+            self.pop_out_circles(landmarks, cur_time)
+            self.pop_out_packmans(landmarks, cur_time)
+            self.pop_out_ellipse_curves(landmarks, cur_time)
 
         if not any(self.obj_live_status.values()):
             chance = randint(1, 10)
