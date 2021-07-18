@@ -36,7 +36,7 @@ def launch_detection_on_capture(capture):
 
         joints = model.get_joints_from_result(results)
 
-        utils.draw_joints(image, joints, pose.POSE_CONNECTIONS)
+        utils.draw_joints(image, joints, model.SKELETON)
 
         game_status = game.process(image, landmarks=joints)
 
