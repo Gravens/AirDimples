@@ -1,3 +1,9 @@
+from typing import NamedTuple
+
+
+class Point(NamedTuple):
+    x: float
+    y: float
 
 
 def denormalize_coordinates(coordinates, size):
