@@ -10,7 +10,7 @@ def launch_detection_on_capture(capture):
 
     pose_instance = pose.Pose()
     ret, frame = capture.read()
-    game = SoloGame(frame.shape, circle_radius=50, interval=3, max_items=20)
+    game = SoloGame(frame.shape, circle_radius=50, interval=1, max_items=20)
 
     while capture.isOpened():
         ret, image = capture.read()
