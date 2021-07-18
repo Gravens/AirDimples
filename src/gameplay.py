@@ -6,18 +6,13 @@ from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleMa
 
 
 class SoloIntensiveFastAim:
-    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4):
+    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4, body_part_indexes=None):
         self.w_size = w_size
         self.circle_radius = circle_radius
         self.interval = interval
         self.max_items = max_items
         self.last_draw_timestamp = time()
-        self.body_part_indexes = {
-            "L_hand": (20, 22, 18, 16),
-            "R_hand": (21, 19, 17, 15),
-            "L_foot": (28, 32, 30),
-            "R_foot": (27, 31, 29)
-        }
+        self.body_part_indexes = body_part_indexes or {}
 
         self.DCM = DefaultCircleManager(w_size)
         self.PM = PackmanManager(w_size)
@@ -107,7 +102,7 @@ class SoloIntensiveFastAim:
 
 
 class SoloClassic:
-    def __init__(self, w_size, circle_radius=20, life_time=1, max_items=10):
+    def __init__(self, w_size, circle_radius=20, life_time=1, max_items=10, body_part_indexes=None):
         self.w_size = w_size
         self.circle_radius = circle_radius
 
@@ -121,12 +116,7 @@ class SoloClassic:
         }
 
         self.last_draw_timestamp = time()
-        self.body_part_indexes = {
-            "L_hand": (20, 22, 18, 16),
-            "R_hand": (21, 19, 17, 15),
-            "L_foot": (28, 32, 30),
-            "R_foot": (27, 31, 29)
-        }
+        self.body_part_indexes = body_part_indexes or {}
 
         self.DCM = DefaultCircleManager(w_size)
         self.PM = PackmanManager(w_size)
