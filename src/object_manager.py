@@ -176,9 +176,8 @@ class MoovingCircleManager:
             item.progress += (include or item.progress != 0) * self.c_speed
 
             if item.progress != 0:
-                item.center = (
-                item.center[0] + item.vector * (self.c_speed * (-1 if item.progress >= item.a * 2 else 1)),
-                item.center[1] + item.vector * (dy * (-1 if item.progress >= item.a * 2 else 1)))
+                item.center = (item.center[0] + item.vector * (self.c_speed * (-1 if item.progress >= item.a * 2 else 1)),
+                               item.center[1] + item.vector * (dy * (-1 if item.progress >= item.a * 2 else 1)))
 
             if item.progress >= item.a * 4:
                 accuracy = item.earned_progress / item.progress
