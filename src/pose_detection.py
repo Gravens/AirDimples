@@ -1,6 +1,7 @@
 import cv2
 from mediapipe.python.solutions import pose
-import mediapipe.python.solutions.drawing_utils as mp_drawing
+
+import utils
 from gameplay import SoloIntensiveFastAim, SoloClassic
 from models.mediapipe_pose import MediapipePoseModel
 
@@ -35,9 +36,7 @@ def launch_detection_on_capture(capture):
 
         joints = model.get_joints_from_result(results)
 
-        if results.pose_landmarks:
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, pose.
-                                      POSE_CONNECTIONS)
+        utils.draw_joints(image, joints, pose.POSE_CONNECTIONS)
 
         game_status = game.process(image, landmarks=joints)
 
