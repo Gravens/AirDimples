@@ -33,11 +33,13 @@ def launch_detection_on_capture(capture):
         image.flags.writeable = True
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
+        joints = model.get_joints_from_result(results)
+
         if results.pose_landmarks:
             mp_drawing.draw_landmarks(image, results.pose_landmarks, pose.
                                       POSE_CONNECTIONS)
 
-        game_status = game.process(image, landmarks=results.pose_landmarks.landmark)
+        game_status = game.process(image, landmarks=joints)
 
         if cv2.waitKey(1) == ord("q") or not game_status:
             break
