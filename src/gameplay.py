@@ -5,7 +5,7 @@ from math import floor
 from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleManager
 
 
-class SoloGame:
+class SoloIntensiveFastAim:
     def __init__(self, w_size, circle_radius=20, interval=1, max_items=4):
         self.w_size = w_size
         self.circle_radius = circle_radius
@@ -104,3 +104,157 @@ class SoloGame:
         for item in self.MCM.ellipse_curves:
             center = tuple(map(floor, item.center))
             cv2.circle(frame, center, self.circle_radius, item.color, 2)
+
+
+class SoloClassic:
+    def __init__(self, w_size, circle_radius=20, life_time=1, max_items=10):
+        self.w_size = w_size
+        self.circle_radius = circle_radius
+
+        self.obj_life_time = life_time
+        self.death_count = -1
+        self.max_items = max_items
+        self.obj_live_status = {
+            "circle": False,
+            "packman": False,
+            "mooving_circle": False
+        }
+
+        self.last_draw_timestamp = time()
+        self.body_part_indexes = {
+            "L_hand": (20, 22, 18, 16),
+            "R_hand": (21, 19, 17, 15),
+            "L_foot": (28, 32, 30),
+            "R_foot": (27, 31, 29)
+        }
+
+        self.DCM = DefaultCircleManager(w_size)
+        self.PM = PackmanManager(w_size)
+        self.MCM = MoovingCircleManager(w_size)
+
+        self.score = 0
+
+    def process(self, frame, results=None):
+        if results and results.pose_landmarks:
+            cur_time = time()
+            self.pop_out_circles(results.pose_landmarks.landmark, cur_time)
+            self.pop_out_packmans(results.pose_landmarks.landmark, cur_time)
+            self.pop_out_ellipse_curves(results.pose_landmarks.landmark, cur_time)
+
+        if not any(self.obj_live_status.values()):
+            chance = randint(1, 10)
+            self.death_count += 1
+            if chance > 2:
+                self.add_new_circle()
+                self.obj_live_status["circle"] = True
+            else:
+                if chance == 1:
+                    self.add_packman()
+                    self.obj_live_status["packman"] = True
+                else:
+                    self.add_new_ellipse_curve()
+                    self.obj_live_status["mooving_circle"] = True
+
+        if self.death_count == self.max_items:
+            print(f"Game over, your score: {self.score}")
+            return False
+
+        self.draw_objects(frame)
+        self.draw_score(frame)
+        cv2.imshow("Show", frame)
+        return True
+
+    def pop_out_ellipse_curves(self, landmarks, cur_time):
+        score_bonus = self.MCM.pop_out(landmarks, self.body_part_indexes, self.circle_radius)
+        if score_bonus or cur_time - self.last_draw_timestamp >= self.obj_life_time:
+            if len(self.MCM.ellipse_curves) and 0 < self.MCM.ellipse_curves[0].progress < self.MCM.ellipse_curves[0].a * 4:
+                return
+            self.obj_live_status["mooving_circle"] = False
+            self.MCM.ellipse_curves = []
+        self.score += score_bonus
+
+    def add_new_ellipse_curve(self):
+        self.MCM.add(self.circle_radius)
+        self.last_draw_timestamp = time()
+
+    def pop_out_packmans(self, landmarks, cur_time):
+        score_bonus = self.PM.pop_out(landmarks, self.body_part_indexes, self.circle_radius)
+        if score_bonus or cur_time - self.last_draw_timestamp >= self.obj_life_time:
+            if len(self.PM.packmans) and 0 < self.PM.packmans[0].progress < self.PM.max_packman_progress:
+                return
+            self.obj_live_status["packman"] = False
+            self.PM.packmans = []
+        self.score += score_bonus
+
+    def add_packman(self):
+        self.PM.add(self.circle_radius)
+        self.last_draw_timestamp = time()
+
+    def pop_out_circles(self, landmarks, cur_time):
+        score_bonus = self.DCM.pop_out(landmarks, self.body_part_indexes, self.circle_radius)
+        if score_bonus or cur_time - self.last_draw_timestamp >= self.obj_life_time:
+            self.obj_live_status["circle"] = False
+            self.DCM.circles = []
+        self.score += score_bonus
+
+    def add_new_circle(self):
+        self.DCM.add(self.circle_radius)
+        self.last_draw_timestamp = time()
+
+    def draw_score(self, frame):
+        cv2.putText(frame, "Score " + str(self.score), (10, 50), cv2.FONT_ITALIC, 2, (255, 0, 0), 3)
+
+    def draw_objects(self, frame):
+        for item in self.DCM.circles:
+            cv2.circle(frame, item.center, self.circle_radius, item.color, 2)
+            cv2.putText(
+                frame,
+                item.side,
+                (item.center[0] - 4, item.center[1] + 5),
+                cv2.FONT_ITALIC, 0.55,
+                item.color,
+                2
+            )
+
+        for item in self.PM.packmans:
+            center = tuple(map(floor, item.center))
+            cv2.circle(frame, center, self.circle_radius, item.color, 2)
+            cv2.line(
+                frame,
+                (center[0], center[1]),
+                (center[0] + self.circle_radius * self.PM.vectors[item.last_vector][0],
+                 center[1] + self.circle_radius * self.PM.vectors[item.last_vector][1]),
+                item.color,
+                2
+            )
+
+        for item in self.MCM.ellipse_curves:
+            center = tuple(map(floor, item.center))
+            cv2.circle(frame, center, self.circle_radius, item.color, 2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

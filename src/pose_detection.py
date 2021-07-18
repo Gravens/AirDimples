@@ -1,7 +1,7 @@
 import cv2
 from mediapipe.python.solutions import pose
 import mediapipe.python.solutions.drawing_utils as mp_drawing
-from gameplay import SoloGame
+from gameplay import SoloIntensiveFastAim, SoloClassic
 
 
 def launch_detection_on_capture(capture):
@@ -10,7 +10,7 @@ def launch_detection_on_capture(capture):
 
     pose_instance = pose.Pose()
     ret, frame = capture.read()
-    game = SoloGame(frame.shape, circle_radius=50, interval=1, max_items=20)
+    game = SoloClassic(frame.shape, circle_radius=50, life_time=1, max_items=10)
 
     while capture.isOpened():
         ret, image = capture.read()
