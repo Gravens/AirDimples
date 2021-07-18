@@ -6,18 +6,13 @@ from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleMa
 
 
 class SoloIntensiveFastAim:
-    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4):
+    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4, body_part_indexes=None):
         self.w_size = w_size
         self.circle_radius = circle_radius
         self.interval = interval
         self.max_items = max_items
         self.last_draw_timestamp = time()
-        self.body_part_indexes = {
-            "L_hand": (20, 22, 18, 16),
-            "R_hand": (21, 19, 17, 15),
-            "L_foot": (28, 32, 30),
-            "R_foot": (27, 31, 29)
-        }
+        self.body_part_indexes = body_part_indexes or {}
 
         self.DCM = DefaultCircleManager(w_size)
         self.PM = PackmanManager(w_size)
@@ -25,11 +20,11 @@ class SoloIntensiveFastAim:
 
         self.score = 0
 
-    def process(self, frame, results=None):
-        if results and results.pose_landmarks:
-            self.pop_out_circles(results.pose_landmarks.landmark)
-            self.pop_out_packmans(results.pose_landmarks.landmark)
-            self.pop_out_ellipse_curves(results.pose_landmarks.landmark)
+    def process(self, frame, landmarks=None):
+        if landmarks:
+            self.pop_out_circles(landmarks)
+            self.pop_out_packmans(landmarks)
+            self.pop_out_ellipse_curves(landmarks)
 
         cur_time = time()
         if cur_time - self.last_draw_timestamp > self.interval:
@@ -107,7 +102,7 @@ class SoloIntensiveFastAim:
 
 
 class SoloClassic:
-    def __init__(self, w_size, circle_radius=20, life_time=1, max_items=10):
+    def __init__(self, w_size, circle_radius=20, life_time=1, max_items=10, body_part_indexes=None):
         self.w_size = w_size
         self.circle_radius = circle_radius
 
@@ -121,12 +116,7 @@ class SoloClassic:
         }
 
         self.last_draw_timestamp = time()
-        self.body_part_indexes = {
-            "L_hand": (20, 22, 18, 16),
-            "R_hand": (21, 19, 17, 15),
-            "L_foot": (28, 32, 30),
-            "R_foot": (27, 31, 29)
-        }
+        self.body_part_indexes = body_part_indexes or {}
 
         self.DCM = DefaultCircleManager(w_size)
         self.PM = PackmanManager(w_size)
@@ -134,12 +124,12 @@ class SoloClassic:
 
         self.score = 0
 
-    def process(self, frame, results=None):
-        if results and results.pose_landmarks:
+    def process(self, frame, landmarks=None):
+        if landmarks:
             cur_time = time()
-            self.pop_out_circles(results.pose_landmarks.landmark, cur_time)
-            self.pop_out_packmans(results.pose_landmarks.landmark, cur_time)
-            self.pop_out_ellipse_curves(results.pose_landmarks.landmark, cur_time)
+            self.pop_out_circles(landmarks, cur_time)
+            self.pop_out_packmans(landmarks, cur_time)
+            self.pop_out_ellipse_curves(landmarks, cur_time)
 
         if not any(self.obj_live_status.values()):
             chance = randint(1, 10)
