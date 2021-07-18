@@ -1,6 +1,6 @@
 import cv2
 from time import time
-from random import randint, shuffle
+from random import randint
 from math import floor
 from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleManager
 
@@ -47,7 +47,6 @@ class SoloIntensiveFastAim:
 
         self.draw_objects(frame)
         self.draw_score(frame)
-        cv2.imshow("Show", frame)
         return True
 
     def pop_out_ellipse_curves(self, landmarks):
@@ -161,7 +160,6 @@ class SoloClassic:
 
         self.draw_objects(frame)
         self.draw_score(frame)
-        cv2.imshow("Show", frame)
         return True
 
     def pop_out_ellipse_curves(self, landmarks, cur_time):
@@ -232,6 +230,23 @@ class SoloClassic:
             center = tuple(map(floor, item.center))
             cv2.circle(frame, center, self.circle_radius, item.color, 2)
 
+
+class GameWithFriend:
+    def __init__(self, w_size, mode1, mode2):
+        self.w_size = w_size
+        self.p1 = mode1
+        self.p2 = mode2
+        self.p1_game_status = True
+        self.p2_game_status = True
+
+    def process(self, image, results):
+        if self.p1_game_status:
+            self.p1_game_status = self.p1.process(image[:, :self.w_size[1] // 2], results[0])
+
+        if self.p2_game_status:
+            self.p2_game_status = self.p2.process(image[:, self.w_size[1] // 2:], results[1])
+
+        return self.p1_game_status or self.p2_game_status
 
 
 
