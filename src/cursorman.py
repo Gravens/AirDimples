@@ -1,5 +1,3 @@
-import logging
-
 import pyautogui
 import keyboard
 
@@ -17,9 +15,7 @@ def move_cursor_on_screen(normalized_finger_coords):
     for finger, coords in normalized_finger_coords.items():
         screen_finger_coords[finger] = denormalize_coordinates((coords.x, coords.y), window_size)
 
-    logging.basicConfig(level='INFO',filename='logger.log')
-    logger = logging.getLogger()
-    logger.info(f"{screen_finger_coords}")
+    print(screen_finger_coords)
 
     # Failsafe
     if keyboard.is_pressed('ctrl'):

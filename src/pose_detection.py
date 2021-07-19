@@ -1,5 +1,3 @@
-import logging
-
 import cv2
 from mediapipe.python.solutions import pose
 import mediapipe.python.solutions.drawing_utils as mp_drawing
@@ -7,9 +5,6 @@ from gameplay import SoloGame
 
 
 def launch_detection_on_capture(capture):
-    logging.basicConfig(level='DEBUG', filename='logger.log')
-    logger = logging.getLogger()
-
     if not capture.isOpened():
         raise IOError('Camera is not accessible')
 
@@ -21,7 +16,7 @@ def launch_detection_on_capture(capture):
     while capture.isOpened():
         ret, image = capture.read()
         if not ret:
-            logger.debug("Ignoring empty camera frame.")
+            print("Ignoring empty camera frame.")
             continue
 
         image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)

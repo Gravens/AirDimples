@@ -1,5 +1,3 @@
-import logging
-
 import cv2
 from time import time
 from random import randint
@@ -25,8 +23,6 @@ class SoloGame:
         self.score = 0
 
     def process(self, frame, results=None):
-        logging.basicConfig(level='DEBUG', filename='logger.log')
-        logger = logging.getLogger()
         if results and results.pose_landmarks:
             self.pop_out_circles(results.pose_landmarks.landmark)
 
@@ -35,7 +31,7 @@ class SoloGame:
             self.add_new_circle()
 
         if len(self.circles) == self.max_items:
-            logger.debug("Max items on the screen! You lost!")
+            print("Max items on the screen! You lost!")
             return False
 
         self.draw_circles(frame)
