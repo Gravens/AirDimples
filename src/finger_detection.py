@@ -1,3 +1,5 @@
+import logging
+
 import cv2
 import mediapipe.python.solutions.hands as mp_hands
 import mediapipe.python.solutions.drawing_utils as mp_drawing
@@ -7,11 +9,13 @@ from utils import denormalize_coordinates
 
 
 def launch_detection_on_capture(capture):
+    logging.basicConfig(level='DEBUG', filename='logger.log')
+    logger = logging.getLogger()
     with mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5) as hands:
         while capture.isOpened():
             ret, image = capture.read()
             if not ret:
-                print("Ignoring empty camera frame.")
+                logger.debug("Ignoring empty camera frame.")
                 continue
 
             # Flip the image horizontally for a later selfie-view display, and convert
