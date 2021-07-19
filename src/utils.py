@@ -8,6 +8,12 @@ class Point(NamedTuple):
     y: float
 
 
+class Joint(NamedTuple):
+    x: float
+    y: float
+    score: float
+
+
 def denormalize_coordinates(coordinates, size):
     """
     Convert normalized coordinates to integer coordinates that correspond to plane size.
@@ -47,7 +53,7 @@ def draw_joints(image, joints, skeleton=None):
     # Denormalize joints coordinates and only select valid ones
     idx_to_coordinates = {}
     for idx, joint in enumerate(joints):
-        joint_px = denormalize_coordinates(joint, (img_cols, img_rows))
+        joint_px = denormalize_coordinates((joint.x, joint.y), (img_cols, img_rows))
         if joint_px is False:
             continue
         idx_to_coordinates[idx] = joint_px
