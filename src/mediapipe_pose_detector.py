@@ -1,8 +1,10 @@
 import cv2
 from mediapipe.python.solutions import pose
-import mediapipe.python.solutions.drawing_utils as mp_drawing
-from gameplay import SoloIntensiveFastAim, SoloClassic, GameWithFriend
+
+import utils
+from gameplay import SoloClassic, GameWithFriend
 from models.mediapipe_pose import MediapipePoseModel
+from utils import log
 
 
 def launch_detection_on_capture(capture):
@@ -36,7 +38,7 @@ def launch_detection_on_capture(capture):
     while capture.isOpened():
         ret, image = capture.read()
         if not ret:
-            print("Ignoring empty camera frame.")
+            log.warning("Ignoring empty camera frame.")
             continue
 
         if type(game) != GameWithFriend:
@@ -52,7 +54,7 @@ def launch_detection_on_capture(capture):
 
             utils.draw_joints(image, joints, model.SKELETON)
 
-            game_status = game.process(image, results=joints)
+            game_status = game.process(image, landmarks=joints)
         else:
             image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
             p1_area = image[:, :image.shape[1] // 2]

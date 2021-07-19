@@ -3,7 +3,7 @@ import mediapipe.python.solutions.hands as mp_hands
 import mediapipe.python.solutions.drawing_utils as mp_drawing
 
 import cursorman
-from utils import denormalize_coordinates
+from utils import denormalize_coordinates, log
 
 
 def launch_detection_on_capture(capture):
@@ -11,7 +11,7 @@ def launch_detection_on_capture(capture):
         while capture.isOpened():
             ret, image = capture.read()
             if not ret:
-                print("Ignoring empty camera frame.")
+                log.warning("Ignoring empty camera frame.")
                 continue
 
             # Flip the image horizontally for a later selfie-view display, and convert
