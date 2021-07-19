@@ -1,6 +1,6 @@
 import enum
 
-from utils import Point
+from utils import Joint
 
 
 class MediapipePoseModel:
@@ -24,7 +24,7 @@ class MediapipePoseModel:
             return []
 
         try:
-            joints = [Point(landmark.x, landmark.y) for landmark in result.pose_landmarks.landmark]
+            joints = [Joint(landmark.x, landmark.y, landmark.visibility) for landmark in result.pose_landmarks.landmark]
             return joints
         except Exception:
             print("Unable to convert result to joints")
