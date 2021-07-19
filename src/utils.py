@@ -1,6 +1,17 @@
+import logging
+import sys
 from typing import NamedTuple
 
 import cv2
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    stream=sys.stdout,
+    format='[%(asctime)s] [%(module)s] [%(levelname)s] %(message)s',
+    datefmt='%H:%M:%S',
+)
+log = logging.getLogger()
 
 
 class Point(NamedTuple):

@@ -1,12 +1,14 @@
+import math
+
 import cv2
-from math import floor
+from openvino.inference_engine import IECore
 
 import utils
 from gameplay import SoloClassic
 from models.intel_pose import IntelPoseModel
-from pose_utils.pipelines import get_user_config, AsyncPipeline
 from pose_utils import models
-from openvino.inference_engine import IECore
+from pose_utils.pipelines import get_user_config, AsyncPipeline
+from utils import log
 
 
 def get_capture_shape(capture):
@@ -26,7 +28,7 @@ def launch_detection_on_capture(capture, args):
     cap_height, cap_width, _ = get_capture_shape(capture)
     aspect_ratio = cap_width / cap_height
     if aspect_ratio >= 1:
-        target_size = floor(cap_height * args["net_input_width"] / cap_width)
+        target_size = math.floor(cap_height * args["net_input_width"] / cap_width)
     else:
         target_size = args["net_input_width"]
 
@@ -50,7 +52,7 @@ def launch_detection_on_capture(capture, args):
     while capture.isOpened():
         ret, frame = capture.read()
         if not ret:
-            print("Received empty camera frame")
+            log.warning("Received empty camera frame")
             break
 
         frame = cv2.flip(frame, 1)

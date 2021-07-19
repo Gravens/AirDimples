@@ -3,6 +3,7 @@ from time import time
 from random import randint
 from math import floor
 from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleManager
+from utils import log
 
 
 class SoloIntensiveFastAim:
@@ -37,7 +38,7 @@ class SoloIntensiveFastAim:
                 else: self.add_new_ellipse_curve()
 
         if len(self.DCM.circles) + len(self.PM.packmans) + len(self.MCM.ellipse_curves) == self.max_items:
-            print("Max items on the screen! You lost!")
+            log.info("Max items on the screen! You lost!")
             return False
 
         self.draw_objects(frame)
@@ -145,7 +146,7 @@ class SoloClassic:
                     self.obj_live_status["mooving_circle"] = True
 
         if self.death_count == self.max_items:
-            print(f"Game over, your score: {self.score}")
+            log.info(f"Game over, your score: {self.score}")
             return False
 
         self.draw_objects(frame)

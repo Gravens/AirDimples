@@ -1,8 +1,7 @@
 import pyautogui
 import keyboard
 
-from utils import denormalize_coordinates
-
+from utils import denormalize_coordinates, log
 
 pyautogui.FAILSAFE = False
 
@@ -15,7 +14,7 @@ def move_cursor_on_screen(normalized_finger_coords):
     for finger, coords in normalized_finger_coords.items():
         screen_finger_coords[finger] = denormalize_coordinates((coords.x, coords.y), window_size)
 
-    print(screen_finger_coords)
+    log.debug(screen_finger_coords)
 
     # Failsafe
     if keyboard.is_pressed('ctrl'):
