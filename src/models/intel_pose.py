@@ -1,6 +1,6 @@
 import enum
 
-from utils import Point, Joint, normalize
+from utils import Point, Joint, normalize, log
 
 
 class IntelPoseModel:
@@ -32,7 +32,7 @@ class IntelPoseModel:
             joints = [Joint(normalize(x, img_cols), normalize(y, img_rows), score) for x, y, score, _ in pose]
             return joints
         except Exception:
-            print("Unable to convert result to joints")
+            log.error("Unable to convert result to joints")
             raise
 
     class Landmark(enum.IntEnum):

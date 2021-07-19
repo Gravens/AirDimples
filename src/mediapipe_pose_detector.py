@@ -2,9 +2,9 @@ import cv2
 from mediapipe.python.solutions import pose
 
 import utils
+from gameplay import SoloClassic, GameWithFriend
 from models.mediapipe_pose import MediapipePoseModel
-import mediapipe.python.solutions.drawing_utils as mp_drawing
-from gameplay import SoloIntensiveFastAim, SoloClassic, GameWithFriend
+from utils import log
 
 
 def launch_detection_on_capture(capture):
@@ -24,7 +24,7 @@ def launch_detection_on_capture(capture):
     while capture.isOpened():
         ret, image = capture.read()
         if not ret:
-            print("Ignoring empty camera frame.")
+            log.warning("Ignoring empty camera frame.")
             continue
 
         if type(game) != GameWithFriend:
