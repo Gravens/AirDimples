@@ -1,15 +1,11 @@
 import cv2
 import numpy as np
 from math import floor
+
+from models.intel_pose import IntelPoseModel
 from pose_utils.pipelines import get_user_config, AsyncPipeline
 from pose_utils import models
 from openvino.inference_engine import IECore
-
-
-SKELETON = (
-    (15, 13), (13, 11), (16, 14), (14, 12), (11, 12), (5, 11), (6, 12), (5, 6),
-    (5, 7), (6, 8), (7, 9), (8, 10), (1, 2), (0, 1), (0, 2), (1, 3), (2, 4), (3, 5), (4, 6)
-)
 
 
 def draw_poses(poses, frame, resize_ratios=(1, 1), min_threshold=0.2):
@@ -18,7 +14,7 @@ def draw_poses(poses, frame, resize_ratios=(1, 1), min_threshold=0.2):
         points = (pose[:, :2] * resize_ratios).astype(np.int32)
         scores = pose[:, 2]
         # Draw joints.
-        for i, j in SKELETON:
+        for i, j in IntelPoseModel.SKELETON:
             if scores[i] > min_threshold and scores[j] > min_threshold:
                 cv2.line(frame, tuple(points[i]), tuple(points[j]), color=(0, 200, 0), thickness=2)
         for i, p in enumerate(points):
