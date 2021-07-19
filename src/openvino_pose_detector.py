@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from math import floor
 
+import utils
 from models.intel_pose import IntelPoseModel
 from pose_utils.pipelines import get_user_config, AsyncPipeline
 from pose_utils import models
@@ -55,10 +56,10 @@ def launch_detection_on_capture(capture, args):
         hpe_pipeline.await_any()
 
         results = hpe_pipeline.get_result(0)
-        if results:
-            (poses, scores), frame_meta = results
-            if len(poses) > 0:
-                draw_poses(poses, frame, resize_ratios)
+
+        joints = IntelPoseModel.get_joints_from_result(results)
+
+        utils.draw_joints(frame, joints, IntelPoseModel.SKELETON)
 
         frame = cv2.flip(frame, 1)
         cv2.imshow("Just Dance", frame)

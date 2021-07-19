@@ -1,6 +1,6 @@
 import enum
 
-from utils import Point
+from utils import Point, Joint, normalize
 
 
 class IntelPoseModel:
@@ -19,7 +19,13 @@ class IntelPoseModel:
             return []
 
         try:
-            raise NotImplementedError
+            (poses, scores), frame_meta = result
+            if len(poses) < 1:
+                return []
+            img_rows, img_cols, _ = frame_meta['frame'].shape
+            pose = poses[0]
+            joints = [Joint(normalize(x, img_cols), normalize(y, img_rows), score) for x, y, score, _ in pose]
+            return joints
         except Exception:
             print("Unable to convert result to joints")
             raise
