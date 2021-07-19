@@ -14,6 +14,13 @@ class Joint(NamedTuple):
     score: float
 
 
+def normalize(coordinate: int, length: int) -> float:
+    """Convert a pixel coordinate to normalized float coordinate between 0 and 1"""
+    if not (0 <= coordinate <= length):
+        raise ValueError('Coordinate exceeds bounds')
+    return coordinate / length
+
+
 def denormalize_coordinates(coordinates, size):
     """
     Convert normalized coordinates to integer coordinates that correspond to plane size.
@@ -44,6 +51,7 @@ JOINT_RADIUS = 2
 JOINT_THICKNESS = 2
 CONNECTION_COLOR = (0, 255, 0)
 CONNECTION_THICKNESS = 2
+THRESHOLD = 0.2
 
 
 def draw_joints(image, joints, skeleton=None):
@@ -53,6 +61,8 @@ def draw_joints(image, joints, skeleton=None):
     # Denormalize joints coordinates and only select valid ones
     idx_to_coordinates = {}
     for idx, joint in enumerate(joints):
+        if joint.score < THRESHOLD:
+            continue
         joint_px = denormalize_coordinates((joint.x, joint.y), (img_cols, img_rows))
         if joint_px is False:
             continue
