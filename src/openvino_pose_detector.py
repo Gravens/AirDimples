@@ -39,12 +39,21 @@ def launch_detection_on_capture(capture, args):
     hpe_pipeline = AsyncPipeline(ie, model_embedding, plugin_config, device=args["device"], max_num_requests=1)
     net_input_size = (model_embedding.w, model_embedding.h)
 
+    game = SoloClassic(
+        [cap_height, cap_width, _],
+        circle_radius=50,
+        life_time=1,
+        max_items=10,
+        body_part_indexes=model.body_part_indexes
+    )
+
     while capture.isOpened():
         ret, frame = capture.read()
         if not ret:
             print("Received empty camera frame")
             break
 
+        frame = cv2.flip(frame, 1)
         resized_frame = cv2.resize(frame, net_input_size, interpolation=cv2.INTER_AREA)
 
         hpe_pipeline.submit_data(resized_frame, 0, {'frame': resized_frame, 'start_time': 0})
@@ -56,10 +65,11 @@ def launch_detection_on_capture(capture, args):
 
         utils.draw_joints(frame, joints, model.SKELETON)
 
-        frame = cv2.flip(frame, 1)
+        game_status = game.process(frame, joints)
+
         cv2.imshow("Just Dance", frame)
 
-        if cv2.waitKey(1) == ord("q"):
+        if cv2.waitKey(1) == ord("q") or not game_status:
             break
 
 
