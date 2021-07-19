@@ -1,73 +1,75 @@
 import cv2
-import numpy as np
 from math import floor
+
+import utils
+from gameplay import SoloClassic
+from models.intel_pose import IntelPoseModel
 from pose_utils.pipelines import get_user_config, AsyncPipeline
 from pose_utils import models
 from openvino.inference_engine import IECore
 
 
-SKELETON = (
-    (15, 13), (13, 11), (16, 14), (14, 12), (11, 12), (5, 11), (6, 12), (5, 6),
-    (5, 7), (6, 8), (7, 9), (8, 10), (1, 2), (0, 1), (0, 2), (1, 3), (2, 4), (3, 5), (4, 6)
-)
-
-
-def draw_poses(poses, frame, resize_ratios=(1, 1), min_threshold=0.2):
-    for pose in poses:
-        # Take only 2 first columns, containing plane coords
-        points = (pose[:, :2] * resize_ratios).astype(np.int32)
-        scores = pose[:, 2]
-        # Draw joints.
-        for i, j in SKELETON:
-            if scores[i] > min_threshold and scores[j] > min_threshold:
-                cv2.line(frame, tuple(points[i]), tuple(points[j]), color=(0, 200, 0), thickness=2)
-        for i, p in enumerate(points):
-            if scores[i] > min_threshold:
-                cv2.circle(frame, tuple(p), 2, (0, 255, 255), 4)
+def get_capture_shape(capture):
+    ret, frame = capture.read()
+    if not ret:
+        raise IOError("Can't read initial frame")
+    return frame.shape
 
 
 def launch_detection_on_capture(capture, args):
-    plugin_config = get_user_config(args["device"], '', None)
+    # Initialize Inference Engine
     ie = IECore()
+    plugin_config = get_user_config(args["device"], '', None)
+    model = IntelPoseModel()
 
-    # prepare model params
-    ret, frame = capture.read()
-    if not ret:
-        raise IOError('Can not read frame!')
-
-    aspect_ratio = frame.shape[1] / frame.shape[0]
+    # Prepare model parameters
+    cap_height, cap_width, _ = get_capture_shape(capture)
+    aspect_ratio = cap_width / cap_height
     if aspect_ratio >= 1:
-        target_size = floor(frame.shape[0] * args["net_input_width"] / frame.shape[1])
+        target_size = floor(cap_height * args["net_input_width"] / cap_width)
     else:
         target_size = args["net_input_width"]
 
-    model = models.HpeAssociativeEmbedding(ie, args["model_path"],
-                                           aspect_ratio=aspect_ratio,
-                                           target_size=target_size, prob_threshold=0.1)
-    hpe_pipeline = AsyncPipeline(ie, model, plugin_config, device=args["device"], max_num_requests=1)
+    model_embedding = models.HpeAssociativeEmbedding(
+        ie, args["model_path"], aspect_ratio=aspect_ratio,
+        target_size=target_size, prob_threshold=0.1
+    )
 
-    net_input_size = (model.w, model.h)
-    resize_ratios = (frame.shape[1] / net_input_size[0]), (frame.shape[0] / net_input_size[1])
+    # Initialize pipeline
+    hpe_pipeline = AsyncPipeline(ie, model_embedding, plugin_config, device=args["device"], max_num_requests=1)
+    net_input_size = (model_embedding.w, model_embedding.h)
 
-    while True:
+    game = SoloClassic(
+        [cap_height, cap_width, _],
+        circle_radius=50,
+        life_time=1,
+        max_items=10,
+        body_part_indexes=model.body_part_indexes
+    )
+
+    while capture.isOpened():
         ret, frame = capture.read()
         if not ret:
+            print("Received empty camera frame")
             break
+
+        frame = cv2.flip(frame, 1)
         resized_frame = cv2.resize(frame, net_input_size, interpolation=cv2.INTER_AREA)
 
         hpe_pipeline.submit_data(resized_frame, 0, {'frame': resized_frame, 'start_time': 0})
         hpe_pipeline.await_any()
 
         results = hpe_pipeline.get_result(0)
-        if results:
-            (poses, scores), frame_meta = results
-            if len(poses) > 0:
-                draw_poses(poses, frame, resize_ratios)
 
-        frame = cv2.flip(frame, 1)
+        joints = model.get_joints_from_result(results)
+
+        utils.draw_joints(frame, joints, model.SKELETON)
+
+        game_status = game.process(frame, joints)
+
         cv2.imshow("Just Dance", frame)
 
-        if cv2.waitKey(1) == ord("q"):
+        if cv2.waitKey(1) == ord("q") or not game_status:
             break
 
 
