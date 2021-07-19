@@ -82,5 +82,9 @@ def launch_detection_on_webcam():
     capture.release()
 
 
-if __name__ == "__main__":
+def main():
     launch_detection_on_webcam()
+
+
+if __name__ == "__main__":
+    main()

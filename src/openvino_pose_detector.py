@@ -84,10 +84,14 @@ def launch_detection_on_webcam(args):
     capture.release()
 
 
-if __name__ == "__main__":
+def main():
     launch_detection_on_webcam({
         "cap_source": 0,
         "model_path": f"{__file__}/../../models/intel/human-pose-estimation-0007/FP16/human-pose-estimation-0007.xml",
         "device": "CPU",
         "net_input_width": 256
     })
+
+
+if __name__ == '__main__':
+    main()
