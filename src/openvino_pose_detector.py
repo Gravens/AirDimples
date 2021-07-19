@@ -2,6 +2,7 @@ import cv2
 from math import floor
 
 import utils
+from gameplay import SoloClassic
 from models.intel_pose import IntelPoseModel
 from pose_utils.pipelines import get_user_config, AsyncPipeline
 from pose_utils import models
@@ -19,6 +20,7 @@ def launch_detection_on_capture(capture, args):
     # Initialize Inference Engine
     ie = IECore()
     plugin_config = get_user_config(args["device"], '', None)
+    model = IntelPoseModel()
 
     # Prepare model parameters
     cap_height, cap_width, _ = get_capture_shape(capture)
@@ -28,13 +30,14 @@ def launch_detection_on_capture(capture, args):
     else:
         target_size = args["net_input_width"]
 
-    model = models.HpeAssociativeEmbedding(ie, args["model_path"],
-                                           aspect_ratio=aspect_ratio,
-                                           target_size=target_size, prob_threshold=0.1)
+    model_embedding = models.HpeAssociativeEmbedding(
+        ie, args["model_path"], aspect_ratio=aspect_ratio,
+        target_size=target_size, prob_threshold=0.1
+    )
 
     # Initialize pipeline
-    hpe_pipeline = AsyncPipeline(ie, model, plugin_config, device=args["device"], max_num_requests=1)
-    net_input_size = (model.w, model.h)
+    hpe_pipeline = AsyncPipeline(ie, model_embedding, plugin_config, device=args["device"], max_num_requests=1)
+    net_input_size = (model_embedding.w, model_embedding.h)
 
     while capture.isOpened():
         ret, frame = capture.read()
@@ -49,9 +52,9 @@ def launch_detection_on_capture(capture, args):
 
         results = hpe_pipeline.get_result(0)
 
-        joints = IntelPoseModel.get_joints_from_result(results)
+        joints = model.get_joints_from_result(results)
 
-        utils.draw_joints(frame, joints, IntelPoseModel.SKELETON)
+        utils.draw_joints(frame, joints, model.SKELETON)
 
         frame = cv2.flip(frame, 1)
         cv2.imshow("Just Dance", frame)
