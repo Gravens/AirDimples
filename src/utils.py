@@ -51,7 +51,7 @@ JOINT_RADIUS = 2
 JOINT_THICKNESS = 2
 CONNECTION_COLOR = (0, 255, 0)
 CONNECTION_THICKNESS = 2
-THRESHOLD = 0.2
+THRESHOLD = 0.1
 
 
 def draw_joints(image, joints, skeleton=None):

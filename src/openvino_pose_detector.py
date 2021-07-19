@@ -8,33 +8,40 @@ from pose_utils import models
 from openvino.inference_engine import IECore
 
 
-def launch_detection_on_capture(capture, args):
-    plugin_config = get_user_config(args["device"], '', None)
-    ie = IECore()
-
-    # prepare model params
+def get_capture_shape(capture):
     ret, frame = capture.read()
     if not ret:
-        raise IOError('Can not read frame!')
+        raise IOError("Can't read initial frame")
+    return frame.shape
 
-    aspect_ratio = frame.shape[1] / frame.shape[0]
+
+def launch_detection_on_capture(capture, args):
+    # Initialize Inference Engine
+    ie = IECore()
+    plugin_config = get_user_config(args["device"], '', None)
+
+    # Prepare model parameters
+    cap_height, cap_width, _ = get_capture_shape(capture)
+    aspect_ratio = cap_width / cap_height
     if aspect_ratio >= 1:
-        target_size = floor(frame.shape[0] * args["net_input_width"] / frame.shape[1])
+        target_size = floor(cap_height * args["net_input_width"] / cap_width)
     else:
         target_size = args["net_input_width"]
 
     model = models.HpeAssociativeEmbedding(ie, args["model_path"],
                                            aspect_ratio=aspect_ratio,
                                            target_size=target_size, prob_threshold=0.1)
+
+    # Initialize pipeline
     hpe_pipeline = AsyncPipeline(ie, model, plugin_config, device=args["device"], max_num_requests=1)
-
     net_input_size = (model.w, model.h)
-    resize_ratios = (frame.shape[1] / net_input_size[0]), (frame.shape[0] / net_input_size[1])
 
-    while True:
+    while capture.isOpened():
         ret, frame = capture.read()
         if not ret:
+            print("Received empty camera frame")
             break
+
         resized_frame = cv2.resize(frame, net_input_size, interpolation=cv2.INTER_AREA)
 
         hpe_pipeline.submit_data(resized_frame, 0, {'frame': resized_frame, 'start_time': 0})
