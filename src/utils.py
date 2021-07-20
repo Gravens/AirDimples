@@ -95,3 +95,40 @@ def draw_joints(image, joints, skeleton=None):
     # Draw joints above the skeleton
     for joint_px in idx_to_coordinates.values():
         cv2.circle(image, joint_px, JOINT_RADIUS, JOINT_COLOR, JOINT_THICKNESS)
+
+
+def distance(p1, p2):
+    return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**(1/2)
+
+
+def up_status(finger_tip, finger_mcp, thumb=False):
+    if not thumb:
+        return finger_mcp[1] - finger_tip[1] > 0
+    else:
+        return finger_mcp[0] - finger_tip[0] > 0
+
+
+def lag_check(image_finger_coords, threshold=40):
+    under_threshold_count = 0
+    for point in image_finger_coords:
+        if point != 'WRIST':
+            if distance(image_finger_coords[point], image_finger_coords['WRIST']) < threshold:
+                under_threshold_count += 1
+
+    return under_threshold_count == len(image_finger_coords) - 1
+
+
+def draw_connection(image, p1, p2, click):
+    cv2.line(image,
+             p1,
+             p2,
+             (238, 255, 0),
+             4)
+
+    cv2.circle(image,
+               ((p1[0] + p2[0]) // 2, (p1[1] + p2[1]) // 2),
+               10,
+               (255, 196, 0) if not click else (0, 255, 0),
+               -1)
+
+
