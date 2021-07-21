@@ -25,6 +25,15 @@ class Joint(NamedTuple):
     score: float
 
 
+def flip_joints(joints):
+    if joints is None:
+        return None
+    ret = []
+    for joint in joints:
+        ret.append(Joint(1-joint.x, joint.y, joint.score))
+    return ret
+
+
 def normalize(coordinate: int, length: int) -> float:
     """Convert a pixel coordinate to normalized float coordinate between 0 and 1"""
     if not (0 <= coordinate <= length):

@@ -33,6 +33,10 @@ class VideoReader(Thread):
         else:
             log.debug('Capture was released successfully')
 
+    def get_input_shape(self):
+        self.read_next()
+        return self.deque[-1].shape
+
     def benchmark_fps(self, num_frames):
         log.info('Benchmarking input fps...')
 
