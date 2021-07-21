@@ -60,8 +60,8 @@ def denormalize_coordinates(coordinates, size):
         return False
 
     # Denormalize and round to int
-    x = round(xn * width)
-    y = round(yn * height)
+    x = int(xn * width)
+    y = int(yn * height)
 
     return x, y
 

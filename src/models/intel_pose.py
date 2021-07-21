@@ -7,10 +7,10 @@ class IntelPoseModel:
 
     def __init__(self):
         self.body_part_indexes = {
-            "L_hand": (10,),
-            "R_hand": (9,),
-            "L_foot": (16,),
-            "R_foot": (15,)
+            "L_hand": (9,),
+            "R_hand": (10,),
+            "L_foot": (15,),
+            "R_foot": (16,)
         }
 
     @staticmethod
