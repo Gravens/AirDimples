@@ -10,8 +10,8 @@ def main():
 
     video_reader = VideoReader(frame_deque)
 
-    fps = video_reader.benchmark_fps(num_frames=80)
-    video_display = VideoDisplay(frame_deque, fps=fps, window_name='Just Dance')
+    input_fps = video_reader.benchmark_fps(num_frames=80)
+    video_display = VideoDisplay(frame_deque, fps=input_fps, window_name='Just Dance')
 
     video_reader.start()
     video_display.start()
