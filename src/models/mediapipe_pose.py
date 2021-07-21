@@ -20,7 +20,7 @@ class MediapipePoseModel:
 
         If result is None, returns empty list.
         """
-        if result is None:
+        if result is None or result.pose_landmarks is None:
             return []
 
         try:
