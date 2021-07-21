@@ -24,7 +24,7 @@ class MediapipePoseModel:
             return []
 
         try:
-            joints = [Joint(landmark.x, landmark.y, landmark.visibility) for landmark in result.pose_landmarks.landmark]
+            joints = [[Joint(landmark.x, landmark.y, landmark.visibility) for landmark in result.pose_landmarks.landmark]]
             return joints
         except Exception:
             log.error("Unable to convert result to joints")

@@ -3,7 +3,7 @@ from time import time
 from random import randint
 from math import floor
 from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleManager
-from utils import log
+from utils import log, Joint
 
 
 class SoloIntensiveFastAim:
@@ -222,7 +222,7 @@ class SoloClassic:
             cv2.circle(frame, center, self.circle_radius, item.color, 2)
 
 
-class GameWithFriend:
+class GameWithFriendOpenVINO:
     def __init__(self, w_size, mode1, mode2):
         self.w_size = w_size
         self.p1 = mode1
@@ -230,16 +230,43 @@ class GameWithFriend:
         self.p1_game_status = True
         self.p2_game_status = True
 
-    def process(self, image, results):
-        if self.p1_game_status:
-            self.p1_game_status = self.p1.process(image[:, :self.w_size[1] // 2], results[0])
+    def get_side(self, joints):
+        left_count = 0
+        right_count = 0
 
-        if self.p2_game_status:
-            self.p2_game_status = self.p2.process(image[:, self.w_size[1] // 2:], results[1])
+        for joint in joints:
+            if joint.x <= 1/2:
+                left_count += 1
+            else:
+                right_count += 1
+        return left_count > right_count
+
+    def validate_joints(self, joints, side):
+        for index, joint in enumerate(joints):
+            if side == 1:
+                if joint.x >= 1/2:
+                    joints[index] = None
+                else:
+                    joints[index] = Joint(joint.x * 2, joint.y, joint.score)
+            elif side == 0:
+                if joint.x <= 1/2:
+                    joints[index] = None
+                else:
+                    joints[index] = Joint((joint.x - 0.5) * 2, joint.y, joint.score)
+
+    def process(self, image, results):
+
+        for item in results:
+            if self.get_side(item):
+                self.validate_joints(item, 1)
+                if self.p1_game_status:
+                    self.p1_game_status = self.p1.process(image[:, :self.w_size[1] // 2], item)
+            else:
+                self.validate_joints(item, 0)
+                if self.p2_game_status:
+                    self.p2_game_status = self.p2.process(image[:, self.w_size[1] // 2:], item)
 
         return self.p1_game_status or self.p2_game_status
-
-
 
 
 

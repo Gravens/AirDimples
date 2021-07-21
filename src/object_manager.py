@@ -13,6 +13,8 @@ def circle_includes(circle,
                     body_part_required=True):
 
     for index in body_part_indexes[body_part]:
+        if landmarks[index] is None:
+            continue
         lxs = (landmarks[index].x * w_size[1] - circle.center[0]) ** 2
         lys = (landmarks[index].y * w_size[0] - circle.center[1]) ** 2
 
