@@ -8,7 +8,7 @@ from models.intel_pose import IntelPoseModel
 from utils import log
 
 
-class VideoDisplay(Thread):
+class DisplayThread(Thread):
     def __init__(self, frame_deque, joints_deque, game, fps=24, window_name='Video'):
         super().__init__()
         self._keep_running = False

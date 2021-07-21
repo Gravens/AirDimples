@@ -6,7 +6,7 @@ import cv2
 from utils import log
 
 
-class VideoReader(Thread):
+class CaptureThread(Thread):
     def __init__(self, deque, cap_source=0):
         super().__init__()
         self._keep_running = False

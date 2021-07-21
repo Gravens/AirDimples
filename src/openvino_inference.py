@@ -10,7 +10,7 @@ from pose_utils.pipelines import get_user_config, AsyncPipeline
 from utils import log
 
 
-class VideoInference(Thread):
+class OpenvinoInferenceThread(Thread):
     def __init__(self, frame_deque, joints_deque, model_path, net_input_width, capture_shape, device='CPU'):
         super().__init__()
         self._keep_running = False
