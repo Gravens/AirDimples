@@ -75,10 +75,10 @@ class Button:
 
         self.clicked = False
 
-    def click(self):
+    def click(self, state=None):
         c_time = time()
         if c_time - self.last_click_timestamp >= self.click_interval:
-            self.clicked = not self.clicked
+            self.clicked = not self.clicked if state is None else state
             self.last_click_timestamp = c_time
 
     def include(self, joint, normalized=True):
@@ -95,6 +95,22 @@ class Button:
         self.label.draw(image)
 
 
+class StartButton(Button):
+    def __init__(self, tl_point, br_point, text, w_size):
+        super().__init__(tl_point, br_point, text, w_size)
+        self.click_interval = 0.4
+
+    def draw(self, image):
+        cv2.circle(
+            image,
+            utils.get_int_middle_point(self.tl_point, self.br_point),
+            (self.br_point[1] - self.tl_point[1]) // 2,
+            BUTTON_CLICKED_COLOR if self.clicked else BUTTON_DEFAULT_COLOR,
+            self.thickness
+        )
+        self.label.draw(image)
+
+
 class GUI:
     def __init__(self, w_size, body_part_indexes):
         self.start_status = False
@@ -103,12 +119,6 @@ class GUI:
         self.game_mode = None
         self.body_part_indexes = body_part_indexes
         self.w_size = w_size
-
-        self.margin_top = int(w_size[0] * 0.05)
-        self.margin_left = int(w_size[1] * 0.05)
-
-        self.menu_item_width = int(w_size[1] * 0.23)
-        self.menu_item_height = int(w_size[1] * 0.14)
 
         self.countdown = 5
         self.last_countdown_timestamp = time()
@@ -128,18 +138,20 @@ class GUI:
         top_row_tls = [(top_row_left_x, top_row_top_y) for top_row_left_x in top_row_left_xs]
         top_row_brs = [(top_row_right_x, top_row_bottom_y) for top_row_right_x in top_row_right_xs]
 
+        start_btn_height = int(button_height*1.3)
+
         left_start_tl = (top_row_left_xs[0], top_row_bottom_y + top_row_margin)
-        left_start_br = (left_start_tl[0] + button_width, left_start_tl[1] + button_height)
-        right_start_tl = (top_row_left_xs[-1], top_row_bottom_y + top_row_margin)
-        right_start_br = (right_start_tl[0] + button_width, right_start_tl[1] + button_height)
+        left_start_br = (left_start_tl[0] + start_btn_height, left_start_tl[1] + start_btn_height)
+        right_start_tl = (top_row_left_xs[-1] + button_width - start_btn_height, top_row_bottom_y + top_row_margin)
+        right_start_br = (right_start_tl[0] + start_btn_height, right_start_tl[1] + start_btn_height)
 
         self.buttons = {
             'one_player': Button(top_row_tls[0], top_row_brs[0], "1 Player", self.w_size),
             'two_players': Button(top_row_tls[1], top_row_brs[1], "2 Players", self.w_size),
             'classic_mode': Button(top_row_tls[2], top_row_brs[2], "Classic", self.w_size),
             'intensive_mode': Button(top_row_tls[3], top_row_brs[3], "Intensive Aim", self.w_size),
-            'left_start': Button(left_start_tl, left_start_br, "Start", self.w_size),
-            'right_start': Button(right_start_tl, right_start_br, "Start", self.w_size),
+            'left_start': StartButton(left_start_tl, left_start_br, "Start", self.w_size),
+            'right_start': StartButton(right_start_tl, right_start_br, "Start", self.w_size),
         }
 
     def process(self, image, joints):
@@ -240,15 +252,20 @@ class GUI:
                 self.buttons[connection[not connection.index(clicked_name)]].clicked = False
 
     def update_buttons(self, joints):
-        for item in joints:
-            for body_part in self.body_part_indexes:
-                for index in self.body_part_indexes[body_part]:
-                    for name, button in self.buttons.items():
+        for name, button in self.buttons.items():
+            indexes_inside = []
+            for item in joints:
+                for body_part in self.body_part_indexes:
+                    for index in self.body_part_indexes[body_part]:
                         if button.include(item[index]):
-                            if name.endswith('start') and (self.player_count is None or self.game_mode is None):
-                                continue
-                            button.click()
-                            self.toggle_buttons(name)
+                            indexes_inside.append(index)
+            if type(button) is StartButton:
+                if self.player_count is None or self.game_mode is None:
+                    continue
+                button.click(state=indexes_inside)
+            elif indexes_inside:
+                button.click()
+                self.toggle_buttons(name)
 
     def draw_menu(self, image):
         for button in self.buttons.values():
