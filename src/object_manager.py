@@ -34,10 +34,10 @@ class DefaultCircleManager:
         self.sides = ["L", "R"]
         self.circles = []
 
-    def add(self, circle_radius):
+    def add(self, circle_radius, hands_only=True):
         center = (randint(circle_radius, self.w_size[1] - circle_radius),
                   randint(circle_radius, self.w_size[0] - circle_radius))
-        color = self.colors[randint(0, 1)]
+        color = self.colors[0 if hands_only else randint(0, 1)]
         side = self.sides[randint(0, 1)]
 
         self.circles.append(DefaultCircle(center, color, side))

@@ -22,6 +22,16 @@ def main():
     input_fps = input_thread.benchmark_fps(num_frames=80)
     input_shape = input_thread.get_input_shape()
 
+    game = SoloIntensiveFastAim(
+        input_shape,
+        circle_radius=50,
+        interval=2,
+        max_items=4,
+        body_part_indexes=IntelPoseModel().body_part_indexes,
+        hands_only=True
+    )
+
+    """
     game = SoloClassic(
         input_shape,
         circle_radius=50,
@@ -31,12 +41,31 @@ def main():
     )
 
     """
+    """
+    game = GameWithFriendOpenVINO(
+        input_shape,
+        SoloClassic(
+            input_shape,
+            circle_radius=50,
+            life_time=2,
+            max_items=10,
+            body_part_indexes=IntelPoseModel().body_part_indexes
+        ),
+        SoloClassic(
+            input_shape,
+            circle_radius=50,
+            life_time=2,
+            max_items=10,
+            body_part_indexes=IntelPoseModel().body_part_indexes
+        )
+    )
+    """
+    """
     inference_thread = MediapipeInferenceThread(
         frame_deque,
         joints_deque
     )
     """
-
     inference_thread = OpenvinoInferenceThread(
         frame_deque, joints_deque,
         model_path=f'{__file__}/../../models/intel/human-pose-estimation-0007/FP16/human-pose-estimation-0007.xml',
