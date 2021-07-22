@@ -2,6 +2,7 @@ import time
 from threading import Thread
 
 import cv2
+import keyboard
 
 import utils
 from models.intel_pose import IntelPoseModel
@@ -11,22 +12,29 @@ from gameplay import GameWithFriendOpenVINO
 
 
 class DisplayThread(Thread):
-    def __init__(self, frame_deque, joints_deque, game, fps=24, window_name='Video', input_thread=None, inference_thread=None):
+    def __init__(self, frame_deque, joints_deque, fps=24, window_name='Video', gui=None):
         super().__init__()
         self._keep_running = False
 
-        self.input_thread = input_thread
-        self.inference_thread = inference_thread
+        self.gui = gui
         self.frame_deque = frame_deque
         self.joints_deque = joints_deque
-        self.game = game
+        self.game = None
         self.fps = fps
         self.window_name = window_name
+        self.quit_button = 'ctrl'
 
     def __del__(self):
         cv2.destroyAllWindows()
 
+    def quit_app(self):
+        log.info('Exiting...')
+        self.stop()
+
     def display_last(self):
+        if keyboard.is_pressed(self.quit_button):
+            self.quit_app()
+
         if not self.frame_deque:
             log.warning('No frames to display; Output fps may be set too high')
             return
@@ -45,16 +53,21 @@ class DisplayThread(Thread):
         for item in joints:
             flipped_joints.append(utils.flip_joints(item))
 
-        if type(self.game) != GameWithFriendOpenVINO:
-            game_status = self.game.process(frame, flipped_joints[0] if len(flipped_joints) != 0 else [])
+        if self.gui.start_status:
+            game_status = True
+            if self.gui.countdown != 0:
+                self.gui.start_prepare(frame)
+            elif type(self.gui.game_mode) != GameWithFriendOpenVINO:
+                game_status = self.gui.game_mode.process(frame, flipped_joints[0] if len(flipped_joints) != 0 else [])
+            else:
+                game_status = self.gui.game_mode.process(frame, flipped_joints)
+
+            if not game_status:
+                self.gui.reset()
         else:
-            game_status = self.game.process(frame, flipped_joints)
-
-        if not game_status:
-            self.inference_thread.stop()
-            self.input_thread.stop()
-            self.stop()
-
+            q = self.gui.process(frame, flipped_joints)
+            if q:
+                self.quit_app()
         cv2.imshow(self.window_name, frame)
         cv2.waitKey(1)
 

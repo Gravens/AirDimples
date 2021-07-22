@@ -2,7 +2,6 @@ import cv2
 from time import time
 from random import randint
 from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleManager
-gameplay
 from utils import log, Joint, draw_objects
 
 
@@ -193,7 +192,7 @@ class GameWithFriendOpenVINO:
 
     def get_side(self, joints):
         left_count = 0
-        right_count = 
+        right_count = 0
         for joint in joints:
             if joint.x <= 1/2:
                 left_count += 1
