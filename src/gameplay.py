@@ -7,13 +7,14 @@ from utils import log, Joint, draw_objects
 
 
 class SoloIntensiveFastAim:
-    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4, body_part_indexes=None):
+    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4, body_part_indexes=None, hands_only=False):
         self.w_size = w_size
         self.circle_radius = circle_radius
         self.interval = interval
         self.max_items = max_items
         self.last_draw_timestamp = time()
         self.body_part_indexes = body_part_indexes or {}
+        self.hands_only = hands_only
 
         self.DCM = DefaultCircleManager(w_size)
         self.PM = PackmanManager(w_size)
@@ -66,18 +67,18 @@ class SoloIntensiveFastAim:
         self.score += score_bonus
 
     def add_new_circle(self):
-        self.DCM.add(self.circle_radius)
+        self.DCM.add(self.circle_radius, hands_only=self.hands_only)
         self.last_draw_timestamp = time()
 
     def draw_score(self, frame):
         cv2.putText(frame, "Score " + str(self.score), (10, 50), cv2.FONT_ITALIC, 2, (255, 0, 0), 3)
 
 
-
 class SoloClassic:
-    def __init__(self, w_size, circle_radius=20, life_time=1, max_items=10, body_part_indexes=None):
+    def __init__(self, w_size, circle_radius=20, life_time=1, max_items=10, body_part_indexes=None, hands_only=False):
         self.w_size = w_size
         self.circle_radius = circle_radius
+        self.hands_only = hands_only
 
         self.obj_life_time = life_time
         self.death_count = -1
@@ -160,7 +161,7 @@ class SoloClassic:
         self.score += score_bonus
 
     def add_new_circle(self):
-        self.DCM.add(self.circle_radius)
+        self.DCM.add(self.circle_radius, hands_only=self.hands_only)
         self.last_draw_timestamp = time()
 
     def draw_score(self, frame):
