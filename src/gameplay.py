@@ -3,11 +3,11 @@ from time import time
 from random import randint
 from math import floor
 from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleManager
-from utils import log, Joint
+from utils import log, Joint, draw_objects
 
 
 class SoloIntensiveFastAim:
-    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4, body_part_indexes=None):
+    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4, draw_objects=None):
         self.w_size = w_size
         self.circle_radius = circle_radius
         self.interval = interval
@@ -41,7 +41,7 @@ class SoloIntensiveFastAim:
             log.info("Max items on the screen! You lost!")
             return False
 
-        self.draw_objects(frame)
+        draw_objects(frame, self.DCM.circles, self.PM.packmans, self.MCM.ellipse_curves, self.circle_radius, self.PM.vectors, self.body_part_indexes, landmarks, self.w_size)
         self.draw_score(frame)
         return True
 
@@ -72,33 +72,6 @@ class SoloIntensiveFastAim:
     def draw_score(self, frame):
         cv2.putText(frame, "Score " + str(self.score), (10, 50), cv2.FONT_ITALIC, 2, (255, 0, 0), 3)
 
-    def draw_objects(self, frame):
-        for item in self.DCM.circles:
-            cv2.circle(frame, item.center, self.circle_radius, item.color, 2)
-            cv2.putText(
-                frame,
-                item.side,
-                (item.center[0] - 4, item.center[1] + 5),
-                cv2.FONT_ITALIC, 0.55,
-                item.color,
-                2
-            )
-
-        for item in self.PM.packmans:
-            center = tuple(map(floor, item.center))
-            cv2.circle(frame, center, self.circle_radius, item.color, 2)
-            cv2.line(
-                frame,
-                (center[0], center[1]),
-                (center[0] + self.circle_radius * self.PM.vectors[item.last_vector][0],
-                 center[1] + self.circle_radius * self.PM.vectors[item.last_vector][1]),
-                item.color,
-                2
-            )
-
-        for item in self.MCM.ellipse_curves:
-            center = tuple(map(floor, item.center))
-            cv2.circle(frame, center, self.circle_radius, item.color, 2)
 
 
 class SoloClassic:
@@ -149,7 +122,7 @@ class SoloClassic:
             log.info(f"Game over, your score: {self.score}")
             return False
 
-        self.draw_objects(frame)
+        draw_objects(frame, self.DCM.circles, self.PM.packmans, self.MCM.ellipse_curves, self.circle_radius, self.PM.vectors, self.body_part_indexes, landmarks, self.w_size)
         self.draw_score(frame)
         return True
 
@@ -193,34 +166,6 @@ class SoloClassic:
     def draw_score(self, frame):
         cv2.putText(frame, "Score " + str(self.score), (10, 50), cv2.FONT_ITALIC, 2, (255, 0, 0), 3)
 
-    def draw_objects(self, frame):
-        for item in self.DCM.circles:
-            cv2.circle(frame, item.center, self.circle_radius, item.color, 2)
-            cv2.putText(
-                frame,
-                item.side,
-                (item.center[0] - 4, item.center[1] + 5),
-                cv2.FONT_ITALIC, 0.55,
-                item.color,
-                2
-            )
-
-        for item in self.PM.packmans:
-            center = tuple(map(floor, item.center))
-            cv2.circle(frame, center, self.circle_radius, item.color, 2)
-            cv2.line(
-                frame,
-                (center[0], center[1]),
-                (center[0] + self.circle_radius * self.PM.vectors[item.last_vector][0],
-                 center[1] + self.circle_radius * self.PM.vectors[item.last_vector][1]),
-                item.color,
-                2
-            )
-
-        for item in self.MCM.ellipse_curves:
-            center = tuple(map(floor, item.center))
-            cv2.circle(frame, center, self.circle_radius, item.color, 2)
-
 
 class GameWithFriendOpenVINO:
     def __init__(self, w_size, mode1, mode2):
@@ -233,12 +178,12 @@ class GameWithFriendOpenVINO:
     def get_side(self, joints):
         left_count = 0
         right_count = 0
-
         for joint in joints:
             if joint.x <= 1/2:
                 left_count += 1
             else:
                 right_count += 1
+        print(left_count, right_count)
         return left_count > right_count
 
     def validate_joints(self, joints, side):
@@ -255,7 +200,6 @@ class GameWithFriendOpenVINO:
                     joints[index] = Joint((joint.x - 0.5) * 2, joint.y, joint.score)
 
     def process(self, image, results):
-
         for item in results:
             if self.get_side(item):
                 self.validate_joints(item, 1)
@@ -267,27 +211,3 @@ class GameWithFriendOpenVINO:
                     self.p2_game_status = self.p2.process(image[:, self.w_size[1] // 2:], item)
 
         return self.p1_game_status or self.p2_game_status
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
