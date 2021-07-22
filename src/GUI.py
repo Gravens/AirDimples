@@ -60,7 +60,7 @@ class Button:
 
 
 class GUI:
-    def __init__(self, w_size, body_part_indexes):
+    def __init__(self, w_size, body_part_indexes, add_quit_button=False):
         self.start_status = False
         self.quit_status = False
         self.player_count = None
@@ -112,6 +112,8 @@ class GUI:
         self.buttons['intensive_mode_btn'].text_x -= self.margin_left
         self.buttons['start_btn'].text_x += self.margin_left // 2
         self.buttons['quit_btn'].text_x += self.margin_left // 2
+        if not add_quit_button:
+            self.buttons.pop('quit_btn')
 
     def process(self, image, joints):
 
@@ -206,7 +208,7 @@ class GUI:
         if self.buttons['start_btn'].clicked:
             self.start_status = True
 
-        if self.buttons['quit_btn'].clicked:
+        if 'quit_btn' in self.buttons and self.buttons['quit_btn'].clicked:
             self.quit_status = True
 
     def toggle_buttons(self, clicked_name):
