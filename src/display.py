@@ -2,6 +2,7 @@ import time
 from threading import Thread
 
 import cv2
+import keyboard
 
 import utils
 from models.intel_pose import IntelPoseModel
@@ -11,23 +12,29 @@ from gameplay import GameWithFriendOpenVINO
 
 
 class DisplayThread(Thread):
-    def __init__(self, frame_deque, joints_deque, fps=24, window_name='Video', input_thread=None, inference_thread=None, gui=None):
+    def __init__(self, frame_deque, joints_deque, fps=24, window_name='Video', gui=None):
         super().__init__()
         self._keep_running = False
 
-        self.input_thread = input_thread
-        self.inference_thread = inference_thread
         self.gui = gui
         self.frame_deque = frame_deque
         self.joints_deque = joints_deque
         self.game = None
         self.fps = fps
         self.window_name = window_name
+        self.quit_button = 'ctrl'
 
     def __del__(self):
         cv2.destroyAllWindows()
 
+    def quit_app(self):
+        log.info('Exiting...')
+        self.stop()
+
     def display_last(self):
+        if keyboard.is_pressed(self.quit_button):
+            self.quit_app()
+
         if not self.frame_deque:
             log.warning('No frames to display; Output fps may be set too high')
             return
@@ -60,9 +67,7 @@ class DisplayThread(Thread):
         else:
             q = self.gui.process(frame, flipped_joints)
             if q:
-                self.inference_thread.stop()
-                self.input_thread.stop()
-                self.stop()
+                self.quit_app()
         cv2.imshow(self.window_name, frame)
         cv2.waitKey(1)
 

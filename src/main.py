@@ -47,13 +47,21 @@ def main():
     gui = GUI(input_shape, model.body_part_indexes)
     display_thread = DisplayThread(frame_deque, joints_deque, fps=input_fps, window_name='Just Dance', gui=gui)
 
+    # Start all threads
     input_thread.start()
     inference_thread.start()
     display_thread.start()
 
+    # Wait for the display thread to finish
+    display_thread.join()
+
+    # Stop other threads
+    input_thread.stop()
+    inference_thread.stop()
+
+    # Wait for other threads to finish
     input_thread.join()
     inference_thread.join()
-    display_thread.join()
 
 
 if __name__ == '__main__':
