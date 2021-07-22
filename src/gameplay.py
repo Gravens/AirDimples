@@ -65,7 +65,7 @@ class SoloIntensiveFastAim(Game):
 
         draw_objects(
             frame, self.DCM.circles, self.PM.packmans, self.MCM.ellipse_curves, self.circle_radius,
-            self.PM.vectors, self.body_part_indexes, landmarks, self.w_size
+            self.PM.vectors, self.body_part_indexes, landmarks
         )
         self.draw_score(frame)
         return True
@@ -121,7 +121,7 @@ class SoloClassic(Game):
 
         draw_objects(
             frame, self.DCM.circles, self.PM.packmans, self.MCM.ellipse_curves, self.circle_radius,
-            self.PM.vectors, self.body_part_indexes, landmarks, self.w_size
+            self.PM.vectors, self.body_part_indexes, landmarks
         )
         self.draw_score(frame)
         return True
@@ -151,35 +151,6 @@ class SoloClassic(Game):
             self.obj_live_status["circle"] = False
             self.DCM.circles = []
         self.score += score_bonus
-
-
-    def draw_objects(self, frame):
-        for item in self.DCM.circles:
-            cv2.circle(frame, item.center, self.circle_radius, item.color, 2)
-            cv2.putText(
-                frame,
-                item.side,
-                (item.center[0] - 4, item.center[1] + 5),
-                cv2.FONT_ITALIC, 0.55,
-                item.color,
-                2
-            )
-
-        for item in self.PM.packmans:
-            center = tuple(map(floor, item.center))
-            cv2.circle(frame, center, self.circle_radius, item.color, 2)
-            cv2.line(
-                frame,
-                (center[0], center[1]),
-                (center[0] + self.circle_radius * self.PM.vectors[item.last_vector][0],
-                 center[1] + self.circle_radius * self.PM.vectors[item.last_vector][1]),
-                item.color,
-                2
-            )
-
-        for item in self.MCM.ellipse_curves:
-            center = tuple(map(floor, item.center))
-            cv2.circle(frame, center, self.circle_radius, item.color, 2)
 
 
 class GameWithFriendOpenVINO:

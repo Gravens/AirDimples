@@ -43,6 +43,8 @@ class DisplayThread(Thread):
         if self.joints_deque:
             joints = self.joints_deque[-1]
             utils.draw_joints(frame, joints, skeleton=IntelPoseModel.SKELETON)
+            for person_joints in joints:
+                utils.draw_limb_circles(frame, person_joints, IntelPoseModel().body_part_indexes)
         else:
             joints = []
 
