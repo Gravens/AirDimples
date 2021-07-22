@@ -108,31 +108,32 @@ def draw_joints(image, joints, skeleton=None):
             cv2.circle(image, joint_px, JOINT_RADIUS, JOINT_COLOR, JOINT_THICKNESS)
 
 
+def draw_circle(image, center, circle_radius, color, thickness=2):
+    cv2.circle(image, center, circle_radius, color, thickness, lineType=cv2.LINE_AA)
+
+
 def draw_objects(frame, circles, packmans, ellipse_curves, circle_radius, vectors, body_part_indexes, joints, w_size):
+    threshold = 0.3
     hand_indexes = (body_part_indexes["R_hand"][0], body_part_indexes["L_hand"][0])
     foot_indexes = (body_part_indexes["R_foot"][0], body_part_indexes["L_foot"][0])
 
     if len(joints) != 0:
         for index in hand_indexes:
-            if joints[index] is None:
+            if joints[index] is None or joints[index].score < threshold:
                 continue
-            cv2.circle(frame,
-                       (int(joints[index].x * w_size[1]), int(joints[index].y * w_size[0])),
-                       circle_radius // 2,
-                       (122, 36, 27),
-                       2)
+            center = (int(joints[index].x * w_size[1]), int(joints[index].y * w_size[0]))
+            color = (122, 36, 27)
+            draw_circle(frame, center, circle_radius // 2, color)
 
         for index in foot_indexes:
-            if joints[index] is None:
+            if joints[index] is None or joints[index].score < threshold:
                 continue
-            cv2.circle(frame,
-                       (int(joints[index].x * w_size[1]), int(joints[index].y * w_size[0])),
-                       circle_radius // 2,
-                       (15, 255, 235),
-                       2)
+            center = (int(joints[index].x * w_size[1]), int(joints[index].y * w_size[0]))
+            color = (15, 255, 235)
+            draw_circle(frame, center, circle_radius // 2, color)
 
     for item in circles:
-        cv2.circle(frame, item.center, circle_radius, item.color, 2)
+        draw_circle(frame, item.center, circle_radius, item.color)
         cv2.putText(
             frame,
             item.side,
@@ -144,7 +145,7 @@ def draw_objects(frame, circles, packmans, ellipse_curves, circle_radius, vector
 
     for item in packmans:
         center = tuple(map(floor, item.center))
-        cv2.circle(frame, center, circle_radius, item.color, 2)
+        draw_circle(frame, center, circle_radius, item.color)
         cv2.line(
             frame,
             (center[0], center[1]),
@@ -156,4 +157,4 @@ def draw_objects(frame, circles, packmans, ellipse_curves, circle_radius, vector
 
     for item in ellipse_curves:
         center = tuple(map(floor, item.center))
-        cv2.circle(frame, center, circle_radius, item.color, 2)
+        draw_circle(frame, center, circle_radius, item.color)
