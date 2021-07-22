@@ -22,9 +22,10 @@ def main():
     game = SoloIntensiveFastAim(
         input_shape,
         circle_radius=50,
-        interval=3,
-        max_items=10,
-        body_part_indexes=IntelPoseModel().body_part_indexes
+        interval=2,
+        max_items=4,
+        body_part_indexes=IntelPoseModel().body_part_indexes,
+        hands_only=True
     )
 
     """
