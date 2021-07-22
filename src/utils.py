@@ -57,31 +57,6 @@ def denormalize(coordinate: float, length: int) -> int:
     return int(coordinate * length)
 
 
-def denormalize_coordinates(coordinates, size):
-    """
-    Convert normalized coordinates to integer coordinates that correspond to plane size.
-
-    Take (xn, yn) where (0 <= xn, yn <= 1) and (width, height).
-
-    Return False if normalized coordinates are not valid.
-
-    Return (x, y) where (0 <= x <= width) and (0 <= y <= height).
-    """
-    # Unpack arguments
-    xn, yn = coordinates
-    width, height = size
-
-    # Check validity
-    if not (0 <= xn <= 1 and 0 <= yn <= 1):
-        return False
-
-    # Denormalize and round to int
-    x = int(xn * width)
-    y = int(yn * height)
-
-    return x, y
-
-
 JOINT_COLOR = (0, 0, 255)
 JOINT_RADIUS = 2
 JOINT_THICKNESS = 2
@@ -92,7 +67,7 @@ THRESHOLD = 0.1
 
 def draw_joints(image, joints, skeleton=None):
     """Draw joints and optionally the skeleton on the image"""
-    img_rows, img_cols, _ = image.shape
+    image_h, image_w, _ = image.shape
 
     # Denormalize joints coordinates and only select valid ones
     for item in joints:
@@ -100,9 +75,7 @@ def draw_joints(image, joints, skeleton=None):
         for idx, joint in enumerate(item):
             if joint.score < THRESHOLD:
                 continue
-            joint_px = denormalize_coordinates((joint.x, joint.y), (img_cols, img_rows))
-            if joint_px is False:
-                continue
+            joint_px = denormalize(joint.x, image_w), denormalize(joint.y, image_h)
             idx_to_coordinates[idx] = joint_px
 
         # Draw skeleton connections

@@ -3,7 +3,7 @@ import mediapipe.python.solutions.hands as mp_hands
 import mediapipe.python.solutions.drawing_utils as mp_drawing
 
 import cursorman
-from utils import denormalize_coordinates, log
+from utils import denormalize, log
 
 
 def launch_detection_on_capture(capture):
@@ -51,7 +51,7 @@ def launch_detection_on_capture(capture):
                 for finger, coords in normalized_finger_coords.items():
                     image_finger_coords[finger] = (
                         None if coords is None
-                        else denormalize_coordinates((coords.x, coords.y), image_size)
+                        else (denormalize(coords.x, image_size[0]), denormalize(coords.y, image_size[1]))
                     )
 
                 if all(image_finger_coords.values()):
