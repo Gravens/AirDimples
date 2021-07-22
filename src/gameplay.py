@@ -233,12 +233,12 @@ class GameWithFriendOpenVINO:
     def get_side(self, joints):
         left_count = 0
         right_count = 0
-
         for joint in joints:
             if joint.x <= 1/2:
                 left_count += 1
             else:
                 right_count += 1
+        print(left_count, right_count)
         return left_count > right_count
 
     def validate_joints(self, joints, side):
@@ -255,7 +255,6 @@ class GameWithFriendOpenVINO:
                     joints[index] = Joint((joint.x - 0.5) * 2, joint.y, joint.score)
 
     def process(self, image, results):
-
         for item in results:
             if self.get_side(item):
                 self.validate_joints(item, 1)
@@ -267,27 +266,3 @@ class GameWithFriendOpenVINO:
                     self.p2_game_status = self.p2.process(image[:, self.w_size[1] // 2:], item)
 
         return self.p1_game_status or self.p2_game_status
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
