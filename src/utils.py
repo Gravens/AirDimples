@@ -26,6 +26,14 @@ class Joint(NamedTuple):
     score: float
 
 
+def get_int_middle_point(point1, point2):
+    p1x, p1y = point1
+    p2x, p2y = point2
+    p3x = (p1x + p2x) // 2
+    p3y = (p1y + p2y) // 2
+    return p3x, p3y
+
+
 def flip_joints(joints):
     if joints is None:
         return None

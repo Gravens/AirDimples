@@ -1,6 +1,9 @@
+import utils
 from gameplay import GameWithFriendOpenVINO, SoloIntensiveFastAim, SoloClassic
 from time import time
 import cv2
+
+from utils import log
 
 CIRCLE_RADIUS = 50
 LIFE_TIME = 2
@@ -8,18 +11,62 @@ INTERVAL = 3
 MAX_ITEM_DEATH = 10
 MAX_ITEMS_ON_SCREEN = 4
 
+BUTTON_LABEL_COLOR = (255, 51, 51)
+BUTTON_DEFAULT_COLOR = (255, 51, 51)
+BUTTON_CLICKED_COLOR = (51, 255, 51)
+COUNTDOWN_LABEL_COLOR = (0, 255, 255)
+
+
+class Label:
+    def __init__(
+            self,
+            text,
+            pos=(0, 0),
+            font_face=cv2.FONT_HERSHEY_COMPLEX,
+            font_scale=1.0,
+            color=(255, 255, 255),
+            thickness=1,
+    ):
+        self.text = text
+        self.pos = pos
+        self.font_face = font_face
+        self.font_scale = font_scale
+        self.color = color
+        self.thickness = thickness
+
+    def get_size(self):
+        text_size, _ = cv2.getTextSize(self.text, self.font_face, self.font_scale, self.thickness)
+        return text_size
+
+    def center_on_point(self, point):
+        center_x, center_y = point
+        text_w, text_h = self.get_size()
+        pos_x = center_x - (text_w // 2)
+        pos_y = center_y + (text_h // 2)
+        self.pos = (pos_x, pos_y)
+
+    def draw(self, image):
+        cv2.putText(
+            image,
+            self.text,
+            self.pos,
+            self.font_face,
+            self.font_scale,
+            self.color,
+            self.thickness,
+            lineType=cv2.LINE_AA,
+        )
+
 
 class Button:
     def __init__(self, tl_point, br_point, text, w_size):
         self.tl_point = tl_point
         self.br_point = br_point
-        self.text = text
-        self.blue = (255, 0, 0)
-        self.green = (0, 255, 0)
         self.thickness = 2
 
-        self.text_x = (self.br_point[0] + self.tl_point[0]) // 2 - int((self.br_point[0] - self.tl_point[0]) / 3.5)
-        self.text_y = (self.br_point[1] + self.tl_point[1]) // 2 + 8
+        center = utils.get_int_middle_point(tl_point, br_point)
+        self.label = Label(text, font_scale=0.8, color=BUTTON_LABEL_COLOR)
+        self.label.center_on_point(center)
 
         self.click_interval = 2
         self.last_click_timestamp = time()
@@ -43,17 +90,9 @@ class Button:
         cv2.rectangle(image,
                       self.tl_point,
                       self.br_point,
-                      self.green if self.clicked else self.blue,
+                      BUTTON_CLICKED_COLOR if self.clicked else BUTTON_DEFAULT_COLOR,
                       self.thickness)
-
-        cv2.putText(
-            image,
-            self.text,
-            (self.text_x, self.text_y),
-            cv2.FONT_ITALIC,
-            0.7,
-            self.green if self.clicked else self.blue,
-        )
+        self.label.draw(image)
 
 
 class GUI:
@@ -105,10 +144,6 @@ class GUI:
                                "Quit",
                                self.w_size)
         }
-        # To hit center
-        self.buttons['intensive_mode_btn'].text_x -= self.margin_left
-        self.buttons['start_btn'].text_x += self.margin_left // 2
-        self.buttons['quit_btn'].text_x += self.margin_left // 2
         if not add_quit_button:
             self.buttons.pop('quit_btn')
 
@@ -131,13 +166,11 @@ class GUI:
             self.countdown -= 1
             self.last_countdown_timestamp = cur_t
 
-        cv2.putText(image,
-                    str(self.countdown),
-                    ((self.w_size[1] // 2) - 35, (self.w_size[0] // 2) + 30),
-                    cv2.FONT_ITALIC,
-                    2,
-                    (0, 255, 255),
-                    4)
+        image_h, image_w, _ = image.shape
+
+        lbl_countdown = Label(str(self.countdown), font_scale=2, thickness=2, color=COUNTDOWN_LABEL_COLOR)
+        lbl_countdown.center_on_point((image_w//2, image_h//2))
+        lbl_countdown.draw(image)
 
     def reset(self):
         self.start_status = False
@@ -228,3 +261,10 @@ class GUI:
     def draw_menu(self, image):
         for button in self.buttons.values():
             button.draw(image)
+
+        image_size = image.shape[:2]
+        image_h, image_w = image_size
+
+        lbl_quit = Label('Press ctrl to quit', font_face=cv2.FONT_HERSHEY_COMPLEX_SMALL)
+        lbl_quit.center_on_point((image_w//2, 20))
+        lbl_quit.draw(image)
