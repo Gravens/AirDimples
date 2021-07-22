@@ -28,8 +28,11 @@ class IntelPoseModel:
             if len(poses) < 1:
                 return []
             img_rows, img_cols, _ = frame_meta['frame'].shape
-            pose = poses[0]
-            joints = [Joint(normalize(x, img_cols), normalize(y, img_rows), score) for x, y, score, _ in pose]
+            joints = []
+            for ind, pose in enumerate(poses):
+                if ind == 2:
+                    break
+                joints.append([Joint(normalize(x, img_cols), normalize(y, img_rows), score) for x, y, score, _ in pose])
             return joints
         except Exception:
             log.error("Unable to convert result to joints")
