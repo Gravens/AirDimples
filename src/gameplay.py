@@ -65,7 +65,7 @@ class SoloIntensiveFastAim(Game):
 
         draw_objects(
             frame, self.DCM.circles, self.PM.packmans, self.MCM.ellipse_curves, self.circle_radius,
-            self.PM.vectors, self.body_part_indexes, landmarks, self.w_size
+            self.PM.vectors, self.body_part_indexes, landmarks
         )
         self.draw_score(frame)
         return True
@@ -121,7 +121,7 @@ class SoloClassic(Game):
 
         draw_objects(
             frame, self.DCM.circles, self.PM.packmans, self.MCM.ellipse_curves, self.circle_radius,
-            self.PM.vectors, self.body_part_indexes, landmarks, self.w_size
+            self.PM.vectors, self.body_part_indexes, landmarks
         )
         self.draw_score(frame)
         return True
