@@ -1,7 +1,5 @@
 from gameplay import GameWithFriendOpenVINO, SoloIntensiveFastAim, SoloClassic
-from models.intel_pose import IntelPoseModel
-from models.mediapipe_pose import MediapipePoseModel
-from time import  time
+from time import time
 import cv2
 
 CIRCLE_RADIUS = 50
@@ -9,7 +7,6 @@ LIFE_TIME = 2
 INTERVAL = 3
 MAX_ITEM_DEATH = 10
 MAX_ITEMS_ON_SCREEN = 4
-BODY_PART_INDEXES = IntelPoseModel().body_part_indexes
 
 
 class Button:
@@ -160,37 +157,37 @@ class GUI:
                                                                         circle_radius=CIRCLE_RADIUS,
                                                                         life_time=LIFE_TIME,
                                                                         max_items=MAX_ITEM_DEATH,
-                                                                        body_part_indexes=BODY_PART_INDEXES),
+                                                                        body_part_indexes=self.body_part_indexes),
                                                             SoloClassic(p_area_size,
                                                                         circle_radius=CIRCLE_RADIUS,
                                                                         life_time=LIFE_TIME,
                                                                         max_items=MAX_ITEM_DEATH,
-                                                                        body_part_indexes=BODY_PART_INDEXES))
+                                                                        body_part_indexes=self.body_part_indexes))
                 else:
                     self.game_mode = GameWithFriendOpenVINO(self.w_size,
                                                             SoloIntensiveFastAim(p_area_size,
                                                                                  circle_radius=CIRCLE_RADIUS,
                                                                                  interval=INTERVAL,
                                                                                  max_items=MAX_ITEMS_ON_SCREEN,
-                                                                                 body_part_indexes=BODY_PART_INDEXES),
+                                                                                 body_part_indexes=self.body_part_indexes),
                                                             SoloIntensiveFastAim(p_area_size,
                                                                                  circle_radius=CIRCLE_RADIUS,
                                                                                  interval=INTERVAL,
                                                                                  max_items=MAX_ITEMS_ON_SCREEN,
-                                                                                 body_part_indexes=BODY_PART_INDEXES))
+                                                                                 body_part_indexes=self.body_part_indexes))
             else:
                 if self.game_mode == 0:
                     self.game_mode = SoloClassic(self.w_size,
                                                  circle_radius=CIRCLE_RADIUS,
                                                  life_time=LIFE_TIME,
                                                  max_items=MAX_ITEM_DEATH,
-                                                 body_part_indexes=BODY_PART_INDEXES)
+                                                 body_part_indexes=self.body_part_indexes)
                 else:
                     self.game_mode = SoloIntensiveFastAim(self.w_size,
                                                           circle_radius=CIRCLE_RADIUS,
                                                           interval=INTERVAL,
                                                           max_items=MAX_ITEMS_ON_SCREEN,
-                                                          body_part_indexes=BODY_PART_INDEXES)
+                                                          body_part_indexes=self.body_part_indexes)
 
     def update_game_params(self):
         if self.buttons['one_player_btn'].clicked:
