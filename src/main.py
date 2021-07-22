@@ -12,6 +12,8 @@ from GUI import GUI
 
 
 def main():
+    model = IntelPoseModel()
+
     frame_deque = collections.deque(maxlen=5)
     joints_deque = collections.deque(maxlen=5)
 
@@ -25,7 +27,7 @@ def main():
         circle_radius=50,
         life_time=2,
         max_items=100,
-        body_part_indexes=IntelPoseModel().body_part_indexes
+        body_part_indexes=model.body_part_indexes
     )
 
     """
@@ -42,11 +44,8 @@ def main():
         capture_shape=input_shape,
     )
 
-    gui = GUI(input_shape, IntelPoseModel().body_part_indexes)
-    display_thread = DisplayThread(frame_deque, joints_deque, fps=input_fps, window_name='Just Dance',
-                                   input_thread=input_thread,
-                                   inference_thread=inference_thread,
-                                   gui=gui)
+    gui = GUI(input_shape, model.body_part_indexes)
+    display_thread = DisplayThread(frame_deque, joints_deque, fps=input_fps, window_name='Just Dance', gui=gui)
 
     input_thread.start()
     inference_thread.start()
