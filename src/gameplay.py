@@ -7,7 +7,7 @@ from utils import log, Joint, draw_objects
 
 
 class SoloIntensiveFastAim:
-    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4, draw_objects=None):
+    def __init__(self, w_size, circle_radius=20, interval=1, max_items=4, body_part_indexes=None):
         self.w_size = w_size
         self.circle_radius = circle_radius
         self.interval = interval
