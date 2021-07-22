@@ -96,7 +96,7 @@ class Button:
 
 
 class GUI:
-    def __init__(self, w_size, body_part_indexes, add_quit_button=False):
+    def __init__(self, w_size, body_part_indexes):
         self.start_status = False
         self.quit_status = False
         self.player_count = None
@@ -113,39 +113,34 @@ class GUI:
         self.countdown = 5
         self.last_countdown_timestamp = time()
 
+        image_h, image_w, _ = w_size
+
+        top_row_margin = 40
+        top_row_btn_count = 4
+        button_width = (image_w - top_row_margin * (top_row_btn_count + 1)) // top_row_btn_count
+        button_height = button_width * 9 // 16
+
+        top_row_right_xs = [(top_row_margin + button_width)*(i+1) for i in range(top_row_btn_count)]
+        top_row_left_xs = [right_x - button_width for right_x in top_row_right_xs]
+        top_row_top_y = top_row_margin
+        top_row_bottom_y = top_row_margin + button_height
+
+        top_row_tls = [(top_row_left_x, top_row_top_y) for top_row_left_x in top_row_left_xs]
+        top_row_brs = [(top_row_right_x, top_row_bottom_y) for top_row_right_x in top_row_right_xs]
+
+        left_start_tl = (top_row_left_xs[0], top_row_bottom_y + top_row_margin)
+        left_start_br = (left_start_tl[0] + button_width, left_start_tl[1] + button_height)
+        right_start_tl = (top_row_left_xs[-1], top_row_bottom_y + top_row_margin)
+        right_start_br = (right_start_tl[0] + button_width, right_start_tl[1] + button_height)
+
         self.buttons = {
-            'one_player_btn': Button((self.margin_left, self.margin_top),
-                                     (self.margin_left + self.menu_item_width,
-                                      self.margin_top + self.menu_item_height),
-                                     "1 Player",
-                                     self.w_size),
-            'two_player_btn': Button((self.margin_left, self.margin_top * 2 + self.menu_item_height),
-                                     (self.margin_left + self.menu_item_width,
-                                      self.margin_top * 2 + self.menu_item_height * 2),
-                                     "2 Player",
-                                     self.w_size),
-            'classic_mode_btn': Button((self.margin_left, self.margin_top * 3 + self.menu_item_height * 2),
-                                       (self.margin_left + self.menu_item_width,
-                                        self.margin_top * 3 + self.menu_item_height * 3),
-                                       "Classic",
-                                       self.w_size),
-            'intensive_mode_btn': Button((self.margin_left, self.margin_top * 4 + self.menu_item_height * 3),
-                                         (self.margin_left + self.menu_item_width,
-                                          self.margin_top * 4 + self.menu_item_height * 4),
-                                         "Intensive Aim",
-                                         self.w_size),
-            'start_btn': Button((self.w_size[1] - self.margin_left - self.menu_item_width, self.margin_top),
-                                (self.w_size[1] - self.margin_left, self.margin_top + self.menu_item_height),
-                                "Start",
-                                self.w_size),
-            'quit_btn': Button((self.w_size[1] - self.margin_left - self.menu_item_width,
-                                self.w_size[0] - self.margin_top - self.menu_item_height),
-                               (self.w_size[1] - self.margin_left, self.w_size[0] - self.margin_top),
-                               "Quit",
-                               self.w_size)
+            'one_player': Button(top_row_tls[0], top_row_brs[0], "1 Player", self.w_size),
+            'two_players': Button(top_row_tls[1], top_row_brs[1], "2 Players", self.w_size),
+            'classic_mode': Button(top_row_tls[2], top_row_brs[2], "Classic", self.w_size),
+            'intensive_mode': Button(top_row_tls[3], top_row_brs[3], "Intensive Aim", self.w_size),
+            'left_start': Button(left_start_tl, left_start_br, "Start", self.w_size),
+            'right_start': Button(right_start_tl, right_start_br, "Start", self.w_size),
         }
-        if not add_quit_button:
-            self.buttons.pop('quit_btn')
 
     def process(self, image, joints):
 
@@ -181,7 +176,7 @@ class GUI:
             button.clicked = False
 
     def check_start(self):
-        if self.buttons["start_btn"].clicked:
+        if self.buttons['left_start'].clicked and self.buttons['right_start'].clicked:
             if self.player_count == 2:
                 p_area_size = (self.w_size[0], self.w_size[1] // 2, self.w_size[2])
                 if self.game_mode == 0:
@@ -223,26 +218,23 @@ class GUI:
                                                           body_part_indexes=self.body_part_indexes)
 
     def update_game_params(self):
-        if self.buttons['one_player_btn'].clicked:
+        if self.buttons['one_player'].clicked:
             self.player_count = 1
 
-        if self.buttons['two_player_btn'].clicked:
+        if self.buttons['two_players'].clicked:
             self.player_count = 2
 
-        if self.buttons['classic_mode_btn'].clicked:
+        if self.buttons['classic_mode'].clicked:
             self.game_mode = 0
 
-        if self.buttons['intensive_mode_btn'].clicked:
+        if self.buttons['intensive_mode'].clicked:
             self.game_mode = 1
 
-        if self.buttons['start_btn'].clicked:
+        if self.buttons['left_start'].clicked and self.buttons['right_start'].clicked:
             self.start_status = True
 
-        if 'quit_btn' in self.buttons and self.buttons['quit_btn'].clicked:
-            self.quit_status = True
-
     def toggle_buttons(self, clicked_name):
-        connections = [("one_player_btn", "two_player_btn"), ("classic_mode_btn", "intensive_mode_btn")]
+        connections = [("one_player", "two_players"), ("classic_mode", "intensive_mode")]
         for connection in connections:
             if clicked_name in connection:
                 self.buttons[connection[not connection.index(clicked_name)]].clicked = False
@@ -253,7 +245,7 @@ class GUI:
                 for index in self.body_part_indexes[body_part]:
                     for name, button in self.buttons.items():
                         if button.include(item[index]):
-                            if name == "start_btn" and (self.player_count is None or self.game_mode is None):
+                            if name.endswith('start') and (self.player_count is None or self.game_mode is None):
                                 continue
                             button.click()
                             self.toggle_buttons(name)
@@ -266,5 +258,5 @@ class GUI:
         image_h, image_w = image_size
 
         lbl_quit = Label('Press ctrl to quit', font_face=cv2.FONT_HERSHEY_COMPLEX_SMALL)
-        lbl_quit.center_on_point((image_w//2, 20))
+        lbl_quit.center_on_point((image_w//2, 18))
         lbl_quit.draw(image)
