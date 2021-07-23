@@ -1,25 +1,13 @@
 import enum
 
-from utils import Point, Joint, normalize, log
+from models.base_pose import PoseModel
+from utils import Joint, normalize, log
 
 
-class IntelPoseModel:
-
-    def __init__(self):
-        self.body_part_indexes = {
-            "L_hand": (9,),
-            "R_hand": (10,),
-            "L_foot": (15,),
-            "R_foot": (16,)
-        }
+class IntelPoseModel(PoseModel):
 
     @staticmethod
     def get_joints_from_result(result=None):
-        """
-        Get list of joints from neural net output.
-
-        If result is None, returns empty list.
-        """
         if result is None:
             return []
 
@@ -37,6 +25,13 @@ class IntelPoseModel:
         except Exception:
             log.error("Unable to convert result to joints")
             raise
+
+    BODY_PART_INDEXES = {
+        "L_hand": (9,),
+        "R_hand": (10,),
+        "L_foot": (15,),
+        "R_foot": (16,)
+    }
 
     class Landmark(enum.IntEnum):
         NOSE = 0

@@ -1,20 +1,10 @@
-import utils
-from gameplay import GameWithFriendOpenVINO, SoloIntensiveFastAim, SoloClassic
 from time import time
+
 import cv2
 
-from utils import log
-
-CIRCLE_RADIUS = 50
-LIFE_TIME = 2
-INTERVAL = 3
-MAX_ITEM_DEATH = 10
-MAX_ITEMS_ON_SCREEN = 4
-
-BUTTON_LABEL_COLOR = (255, 51, 51)
-BUTTON_DEFAULT_COLOR = (255, 51, 51)
-BUTTON_CLICKED_COLOR = (51, 255, 51)
-COUNTDOWN_LABEL_COLOR = (0, 255, 255)
+import utils
+from config import config
+from gameplay import GameWithFriendOpenVINO, SoloIntensiveFastAim, SoloClassic
 
 
 class Label:
@@ -65,7 +55,7 @@ class Button:
         self.thickness = 2
 
         center = utils.get_int_middle_point(tl_point, br_point)
-        self.label = Label(text, font_scale=0.8, color=BUTTON_LABEL_COLOR)
+        self.label = Label(text, font_scale=0.8, color=config.graphics.label_default_color)
         self.label.center_on_point(center)
 
         self.click_interval = 2
@@ -87,10 +77,16 @@ class Button:
         return x_valid and y_valid
 
     def draw(self, image):
+        if self.clicked:
+            color = config.graphics.button_clicked_color
+            self.label.color = config.graphics.label_clicked_color
+        else:
+            color = config.graphics.button_default_color
+            self.label.color = config.graphics.label_default_color
         cv2.rectangle(image,
                       self.tl_point,
                       self.br_point,
-                      BUTTON_CLICKED_COLOR if self.clicked else BUTTON_DEFAULT_COLOR,
+                      color,
                       self.thickness)
         self.label.draw(image)
 
@@ -101,23 +97,29 @@ class StartButton(Button):
         self.click_interval = 0.4
 
     def draw(self, image):
+        if self.clicked:
+            color = config.graphics.button_clicked_color
+            self.label.color = config.graphics.label_clicked_color
+        else:
+            color = config.graphics.button_default_color
+            self.label.color = config.graphics.label_default_color
         cv2.circle(
             image,
             utils.get_int_middle_point(self.tl_point, self.br_point),
             (self.br_point[1] - self.tl_point[1]) // 2,
-            BUTTON_CLICKED_COLOR if self.clicked else BUTTON_DEFAULT_COLOR,
+            color,
             self.thickness
         )
         self.label.draw(image)
 
 
 class GUI:
-    def __init__(self, w_size, body_part_indexes):
+    def __init__(self,  w_size):
         self.start_status = False
         self.quit_status = False
         self.player_count = None
         self.game_mode = None
-        self.body_part_indexes = body_part_indexes
+        self.body_part_indexes = config.app.model.BODY_PART_INDEXES
         self.w_size = w_size
 
         self.countdown = 5
@@ -175,7 +177,12 @@ class GUI:
 
         image_h, image_w, _ = image.shape
 
-        lbl_countdown = Label(str(self.countdown), font_scale=2, thickness=2, color=COUNTDOWN_LABEL_COLOR)
+        lbl_countdown = Label(
+            str(self.countdown),
+            font_scale=config.graphics.countdown_label_font_scale,
+            thickness=config.graphics.countdown_label_thickness,
+            color=config.graphics.countdown_label_color
+        )
         lbl_countdown.center_on_point((image_w//2, image_h//2))
         lbl_countdown.draw(image)
 
@@ -192,42 +199,22 @@ class GUI:
             if self.player_count == 2:
                 p_area_size = (self.w_size[0], self.w_size[1] // 2, self.w_size[2])
                 if self.game_mode == 0:
-                    self.game_mode = GameWithFriendOpenVINO(self.w_size,
-                                                            SoloClassic(p_area_size,
-                                                                        circle_radius=CIRCLE_RADIUS,
-                                                                        life_time=LIFE_TIME,
-                                                                        max_items=MAX_ITEM_DEATH,
-                                                                        body_part_indexes=self.body_part_indexes),
-                                                            SoloClassic(p_area_size,
-                                                                        circle_radius=CIRCLE_RADIUS,
-                                                                        life_time=LIFE_TIME,
-                                                                        max_items=MAX_ITEM_DEATH,
-                                                                        body_part_indexes=self.body_part_indexes))
+                    self.game_mode = GameWithFriendOpenVINO(
+                        self.w_size,
+                        SoloClassic(p_area_size),
+                        SoloClassic(p_area_size),
+                    )
                 else:
-                    self.game_mode = GameWithFriendOpenVINO(self.w_size,
-                                                            SoloIntensiveFastAim(p_area_size,
-                                                                                 circle_radius=CIRCLE_RADIUS,
-                                                                                 interval=INTERVAL,
-                                                                                 max_items=MAX_ITEMS_ON_SCREEN,
-                                                                                 body_part_indexes=self.body_part_indexes),
-                                                            SoloIntensiveFastAim(p_area_size,
-                                                                                 circle_radius=CIRCLE_RADIUS,
-                                                                                 interval=INTERVAL,
-                                                                                 max_items=MAX_ITEMS_ON_SCREEN,
-                                                                                 body_part_indexes=self.body_part_indexes))
+                    self.game_mode = GameWithFriendOpenVINO(
+                        self.w_size,
+                        SoloIntensiveFastAim(p_area_size),
+                        SoloIntensiveFastAim(p_area_size),
+                    )
             else:
                 if self.game_mode == 0:
-                    self.game_mode = SoloClassic(self.w_size,
-                                                 circle_radius=CIRCLE_RADIUS,
-                                                 life_time=LIFE_TIME,
-                                                 max_items=MAX_ITEM_DEATH,
-                                                 body_part_indexes=self.body_part_indexes)
+                    self.game_mode = SoloClassic(self.w_size)
                 else:
-                    self.game_mode = SoloIntensiveFastAim(self.w_size,
-                                                          circle_radius=CIRCLE_RADIUS,
-                                                          interval=INTERVAL,
-                                                          max_items=MAX_ITEMS_ON_SCREEN,
-                                                          body_part_indexes=self.body_part_indexes)
+                    self.game_mode = SoloIntensiveFastAim(self.w_size)
 
     def update_game_params(self):
         if self.buttons['one_player'].clicked:
@@ -274,6 +261,6 @@ class GUI:
         image_size = image.shape[:2]
         image_h, image_w = image_size
 
-        lbl_quit = Label('Press ctrl to quit', font_face=cv2.FONT_HERSHEY_COMPLEX_SMALL)
+        lbl_quit = Label(f'Press {config.app.quit_key} to quit', font_face=cv2.FONT_HERSHEY_COMPLEX_SMALL)
         lbl_quit.center_on_point((image_w//2, 18))
         lbl_quit.draw(image)
