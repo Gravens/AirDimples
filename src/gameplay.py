@@ -2,16 +2,17 @@ import cv2
 from time import time
 from random import randint
 from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleManager
-from utils import log, Joint, draw_objects
+from utils import log, Joint
+from drawing import draw_objects
+from config import config
 
 
 class Game:
-    def __init__(self, w_size, body_part_indexes=None, hands_only=False, circle_radius=20, max_items=10):
+    def __init__(self, w_size):
         self.w_size = w_size
-        self.body_part_indexes = body_part_indexes or {}
-        self.hands_only = hands_only
-        self.circle_radius = circle_radius
-        self.max_items = max_items
+        self.body_part_indexes = config.app.model.BODY_PART_INDEXES
+        self.hands_only = not config.gameplay.foot_circles_enabled
+        self.circle_radius = config.gameplay.circle_radius
 
         self.last_draw_timestamp = time()
         self.DCM = DefaultCircleManager(w_size)
@@ -37,9 +38,10 @@ class Game:
 
 
 class SoloIntensiveFastAim(Game):
-    def __init__(self, w_size, body_part_indexes=None, hands_only=False, circle_radius=20, max_items=4, interval=1):
-        super().__init__(w_size, body_part_indexes, hands_only, circle_radius, max_items)
-        self.interval = interval
+    def __init__(self, w_size):
+        super().__init__(w_size)
+        self.max_items = config.gameplay.intensive_max_circles_on_screen
+        self.interval = config.gameplay.intensive_interval
 
     def process(self, frame, landmarks=None):
         if landmarks:
@@ -84,9 +86,10 @@ class SoloIntensiveFastAim(Game):
 
 
 class SoloClassic(Game):
-    def __init__(self, w_size, body_part_indexes=None, hands_only=False, circle_radius=20, max_items=10, life_time=1):
-        super().__init__(w_size, body_part_indexes, hands_only, circle_radius, max_items)
-        self.obj_life_time = life_time
+    def __init__(self, w_size):
+        super().__init__(w_size)
+        self.max_items = config.gameplay.classic_max_circles_destroyed
+        self.obj_life_time = config.gameplay.classic_circle_life_time
         self.death_count = -1
         self.obj_live_status = {
             "circle": False,

@@ -1,3 +1,4 @@
+from config import config
 from objects import DefaultCircle, Packman, MoovingCircle
 from random import randint, shuffle
 
@@ -8,7 +9,6 @@ def circle_includes(circle,
                     radius,
                     body_part_indexes,
                     w_size,
-                    hand_color=(122, 36, 27),
                     side_required=True,
                     body_part_required=True):
 
@@ -20,7 +20,7 @@ def circle_includes(circle,
 
         if lxs + lys <= radius ** 2:
             side, part = body_part.split("_")
-            need_part = "hand" if circle.color == hand_color else "foot"
+            need_part = "hand" if circle.color == config.graphics.hand_color else "foot"
             if (not side_required or side == circle.side) and (part == need_part or not body_part_required):
                 return True
     return False
@@ -28,9 +28,8 @@ def circle_includes(circle,
 
 class DefaultCircleManager:
     def __init__(self, w_size):
-        # colors[0] - hand, colors[1] - leg
         self.w_size = w_size
-        self.colors = [(122, 36, 27), (15, 255, 235)]
+        self.colors = [config.graphics.hand_color, config.graphics.foot_color]
         self.sides = ["L", "R"]
         self.circles = []
 
@@ -64,9 +63,9 @@ class PackmanManager:
         # packman is fast but trajectory is easy
         self.w_size = w_size
         self.vectors = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-        self.p_speed = 5
+        self.p_speed = config.gameplay.pacman_speed
         self.packmans = []
-        self.max_packman_progress = 300
+        self.max_packman_progress = config.gameplay.pacman_max_progress
 
     def circle_in_area(self, center, circle_radius):
         x_valid = circle_radius < center[0] < self.w_size[1] - circle_radius

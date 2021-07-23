@@ -1,34 +1,31 @@
 import enum
 
+from models.base_pose import PoseModel
 from utils import Joint, log
 
 
-class MediapipePoseModel:
-
-    def __init__(self):
-        self.body_part_indexes = {
-            "L_hand": (21, 19, 17, 15),
-            "R_hand": (20, 22, 18, 16),
-            "L_foot": (27, 31, 29),
-            "R_foot": (28, 32, 30),
-        }
+class MediapipePoseModel(PoseModel):
 
     @staticmethod
     def get_joints_from_result(result=None):
-        """
-        Get list of joints from neural net output.
-
-        If result is None, returns empty list.
-        """
         if result is None or result.pose_landmarks is None:
             return []
 
         try:
-            joints = [[Joint(landmark.x, landmark.y, landmark.visibility) for landmark in result.pose_landmarks.landmark]]
+            joints = [
+                [Joint(landmark.x, landmark.y, landmark.visibility) for landmark in result.pose_landmarks.landmark]
+            ]
             return joints
         except Exception:
             log.error("Unable to convert result to joints")
             raise
+
+    BODY_PART_INDEXES = {
+        "L_hand": (21, 19, 17, 15),
+        "R_hand": (20, 22, 18, 16),
+        "L_foot": (27, 31, 29),
+        "R_foot": (28, 32, 30),
+    }
     
     class Landmark(enum.IntEnum):
         NOSE = 0

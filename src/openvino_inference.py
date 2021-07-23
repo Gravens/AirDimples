@@ -4,14 +4,14 @@ from threading import Thread
 import cv2
 from openvino.inference_engine import IECore
 
-from models.intel_pose import IntelPoseModel
 from pose_utils import models
 from pose_utils.pipelines import get_user_config, AsyncPipeline
 from utils import log
+from config import config
 
 
 class OpenvinoInferenceThread(Thread):
-    def __init__(self, frame_deque, joints_deque, model_path, net_input_width, capture_shape, device='CPU'):
+    def __init__(self, frame_deque, joints_deque, capture_shape):
         super().__init__()
         self._keep_running = False
 
@@ -20,10 +20,11 @@ class OpenvinoInferenceThread(Thread):
 
         # Initialize Inference Engine
         self.ie = IECore()
-        plugin_config = get_user_config(device, '', None)
-        self.model = IntelPoseModel()
+        plugin_config = get_user_config(config.app.inference_device, '', None)
+        self.model = config.app.model
 
         # Prepare model parameters
+        net_input_width = config.app.neural_network_input_width
         cap_height, cap_width, _ = capture_shape
         aspect_ratio = cap_width / cap_height
         if aspect_ratio >= 1:
@@ -32,7 +33,7 @@ class OpenvinoInferenceThread(Thread):
             target_size = net_input_width
 
         model_embedding = models.HpeAssociativeEmbedding(
-            self.ie, model_path, aspect_ratio=aspect_ratio,
+            self.ie, config.app.model_path, aspect_ratio=aspect_ratio,
             target_size=target_size, prob_threshold=0.1,
         )
 
@@ -41,7 +42,7 @@ class OpenvinoInferenceThread(Thread):
             self.ie,
             model_embedding,
             plugin_config,
-            device=device,
+            device=config.app.inference_device,
             max_num_requests=1,
         )
         self.net_input_size = (model_embedding.w, model_embedding.h)
