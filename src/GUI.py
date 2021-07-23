@@ -55,7 +55,7 @@ class Button:
         self.thickness = 2
 
         center = utils.get_int_middle_point(tl_point, br_point)
-        self.label = Label(text, font_scale=0.8, color=config.graphics.label_default_color)
+        self.label = Label(text, font_scale=0.82 * w_size[1] / 960, color=config.graphics.label_default_color)
         self.label.center_on_point(center)
 
         self.click_interval = 2
@@ -127,7 +127,7 @@ class GUI:
 
         image_h, image_w, _ = w_size
 
-        top_row_margin = 40
+        top_row_margin = int(image_w * 0.03)
         top_row_btn_count = 4
         button_width = (image_w - top_row_margin * (top_row_btn_count + 1)) // top_row_btn_count
         button_height = button_width * 9 // 16
@@ -261,6 +261,7 @@ class GUI:
         image_size = image.shape[:2]
         image_h, image_w = image_size
 
-        lbl_quit = Label(f'Press {config.app.quit_key} to quit', font_face=cv2.FONT_HERSHEY_COMPLEX_SMALL)
-        lbl_quit.center_on_point((image_w//2, 18))
+        lbl_quit = Label(f'Press {config.app.quit_key} to quit', font_face=cv2.FONT_HERSHEY_COMPLEX_SMALL,
+                         font_scale=image_w / 960)
+        lbl_quit.center_on_point((image_w//2, 18 * image_w // 960))
         lbl_quit.draw(image)
