@@ -1,12 +1,13 @@
-from gameplay import GameWithFriendOpenVINO, SoloIntensiveFastAim, SoloClassic
+from gameplay import GameWithFriendOpenVINO, SoloIntensiveFastAim, SoloClassic, SoloMusic
 from time import time
 import cv2
+import pyglet
 
 CIRCLE_RADIUS = 50
 LIFE_TIME = 2
 INTERVAL = 3
 MAX_ITEM_DEATH = 10
-MAX_ITEMS_ON_SCREEN = 4
+MAX_ITEMS_ON_SCREEN = 500
 
 
 class Button:
@@ -59,6 +60,7 @@ class Button:
 class GUI:
     def __init__(self, w_size, body_part_indexes, add_quit_button=False):
         self.start_status = False
+        self.game_start_status = False
         self.quit_status = False
         self.player_count = None
         self.game_mode = None
@@ -93,7 +95,7 @@ class GUI:
             'intensive_mode_btn': Button((self.margin_left, self.margin_top * 4 + self.menu_item_height * 3),
                                          (self.margin_left + self.menu_item_width,
                                           self.margin_top * 4 + self.menu_item_height * 4),
-                                         "Intensive Aim",
+                                         "Solo Music",
                                          self.w_size),
             'start_btn': Button((self.w_size[1] - self.margin_left - self.menu_item_width, self.margin_top),
                                 (self.w_size[1] - self.margin_left, self.margin_top + self.menu_item_height),
@@ -113,7 +115,6 @@ class GUI:
             self.buttons.pop('quit_btn')
 
     def process(self, image, joints):
-
         if len(joints) != 0:
             self.update_buttons(joints)
 
@@ -130,6 +131,9 @@ class GUI:
         if cur_t - self.last_countdown_timestamp >= 1:
             self.countdown -= 1
             self.last_countdown_timestamp = cur_t
+        
+        if self.countdown == -1:
+            self.game_start_status = True
 
         cv2.putText(image,
                     str(self.countdown),
@@ -183,11 +187,12 @@ class GUI:
                                                  max_items=MAX_ITEM_DEATH,
                                                  body_part_indexes=self.body_part_indexes)
                 else:
-                    self.game_mode = SoloIntensiveFastAim(self.w_size,
-                                                          circle_radius=CIRCLE_RADIUS,
-                                                          interval=INTERVAL,
-                                                          max_items=MAX_ITEMS_ON_SCREEN,
-                                                          body_part_indexes=self.body_part_indexes)
+                    self.game_mode = SoloMusic(self.w_size,
+                                               circle_radius=CIRCLE_RADIUS,
+                                               max_items=MAX_ITEMS_ON_SCREEN,
+                                               min_spawn_interval=0.5,
+                                               min_follow_interval=0.6,
+                                               body_part_indexes=self.body_part_indexes)
 
     def update_game_params(self):
         if self.buttons['one_player_btn'].clicked:

@@ -33,14 +33,23 @@ class DefaultCircleManager:
         self.colors = [(122, 36, 27), (15, 255, 235)]
         self.sides = ["L", "R"]
         self.circles = []
+        self.last = None
 
-    def add(self, circle_radius, hands_only=True):
-        center = (randint(circle_radius, self.w_size[1] - circle_radius),
-                  randint(circle_radius, self.w_size[0] - circle_radius))
-        color = self.colors[0 if hands_only else randint(0, 1)]
-        side = self.sides[randint(0, 1)]
+    def add(self, circle_radius, hands_only=True, follow_last=False):
+        
+        if follow_last:
+            center = (randint(circle_radius, min(self.last.center[0] + circle_radius, self.w_size[1] - circle_radius)),
+                      randint(circle_radius, min(self.last.center[1] + circle_radius, self.w_size[0] - circle_radius)))
+            color = self.last.color
+            side = self.last.side
+        else:
+            center = (randint(circle_radius, self.w_size[1] - circle_radius),
+                      randint(circle_radius, self.w_size[0] - circle_radius))
+            color = self.colors[0 if hands_only else randint(0, 1)]
+            side = self.sides[randint(0, 1)]
 
-        self.circles.append(DefaultCircle(center, color, side))
+        self.last = DefaultCircle(center, color, side)
+        self.circles.append(self.last)
 
     def pop_out(self, landmarks, body_part_indexes, radius):
         score_count = 0

@@ -1,6 +1,6 @@
-opencv-python==4.5.2.54
-openvino==2021.4.0
-scipy==1.7.0
-mediapipe==0.8.6
-PyAutoGUI==0.9.52
-keyboard==0.13.5
+opencv-python
+openvino
+scipy
+mediapipe
+PyAutoGUI
+keyboard

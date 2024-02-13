@@ -1,7 +1,7 @@
 import collections
 import time
 
-from gameplay import SoloClassic, GameWithFriendOpenVINO, SoloIntensiveFastAim
+from gameplay import SoloClassic, SoloMusic, GameWithFriendOpenVINO, SoloIntensiveFastAim
 from models.mediapipe_pose import MediapipePoseModel
 from models.intel_pose import IntelPoseModel
 from display import DisplayThread
@@ -21,7 +21,7 @@ def main():
 
     input_fps = input_thread.benchmark_fps(num_frames=80)
     input_shape = input_thread.get_input_shape()
-
+    """
     game = SoloIntensiveFastAim(
         input_shape,
         circle_radius=50,
@@ -32,15 +32,15 @@ def main():
     )
 
     """
-    game = SoloClassic(
+    game = SoloMusic(
         input_shape,
         circle_radius=50,
-        life_time=2,
-        max_items=100,
-        body_part_indexes=model.body_part_indexes
+        max_items=4,
+        body_part_indexes=IntelPoseModel().body_part_indexes,
+        hands_only=True
     )
 
-    """
+
     """
     game = GameWithFriendOpenVINO(
         input_shape,

@@ -3,6 +3,7 @@ from time import time
 from random import randint
 from object_manager import DefaultCircleManager, PackmanManager, MoovingCircleManager
 from utils import log, Joint, draw_objects
+import librosa
 
 
 class Game:
@@ -19,6 +20,7 @@ class Game:
         self.MCM = MoovingCircleManager(w_size)
 
         self.score = 0
+        self.is_game_started = False
 
     def add_new_ellipse_curve(self):
         self.MCM.add(self.circle_radius)
@@ -31,8 +33,8 @@ class Game:
     def draw_score(self, frame):
         cv2.putText(frame, "Score " + str(self.score), (10, 50), cv2.FONT_ITALIC, 2, (255, 0, 0), 3)
 
-    def add_new_circle(self):
-        self.DCM.add(self.circle_radius, hands_only=self.hands_only)
+    def add_new_circle(self, follow_last=False):
+        self.DCM.add(self.circle_radius, hands_only=self.hands_only, follow_last=follow_last)
         self.last_draw_timestamp = time()
 
 
@@ -60,6 +62,77 @@ class SoloIntensiveFastAim(Game):
                     self.add_new_ellipse_curve()
 
         if len(self.DCM.circles) + len(self.PM.packmans) + len(self.MCM.ellipse_curves) == self.max_items:
+            log.info("Max items on the screen! You lost!")
+            return False
+
+        draw_objects(
+            frame, self.DCM.circles, self.PM.packmans, self.MCM.ellipse_curves, self.circle_radius,
+            self.PM.vectors, self.body_part_indexes, landmarks, self.w_size
+        )
+        self.draw_score(frame)
+        return True
+
+    def pop_out_ellipse_curves(self, landmarks):
+        score_bonus = self.MCM.pop_out(landmarks, self.body_part_indexes, self.circle_radius)
+        self.score += score_bonus
+
+    def pop_out_packmans(self, landmarks):
+        score_bonus = self.PM.pop_out(landmarks, self.body_part_indexes, self.circle_radius)
+        self.score += score_bonus
+
+    def pop_out_circles(self, landmarks):
+        score_bonus = self.DCM.pop_out(landmarks, self.body_part_indexes, self.circle_radius)
+        self.score += score_bonus
+
+
+class SoloMusic(Game):
+    is_music_playing = False
+
+    def __init__(self, w_size, body_part_indexes=None, hands_only=True, circle_radius=20, min_spawn_interval=0.2, min_follow_interval=0.5, max_items=4):
+        super().__init__(w_size, body_part_indexes, hands_only, circle_radius, max_items)
+
+        y, sr = librosa.load('hey.mp3')
+
+        self.min_follow_interval = min_follow_interval
+        self.min_spawn_interval = min_spawn_interval
+        self.start_game_time = time()
+        self.tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
+        self.beat_timings = librosa.frames_to_time(beat_frames, sr=sr)
+        self.cur_beat = 0
+
+    def process(self, frame, landmarks=None):
+        if landmarks:
+            self.pop_out_circles(landmarks)
+
+        if self.cur_beat == len(self.beat_timings):
+            draw_objects(
+                frame, self.DCM.circles, self.PM.packmans, self.MCM.ellipse_curves, self.circle_radius,
+                self.PM.vectors, self.body_part_indexes, landmarks, self.w_size
+            )
+            self.draw_score(frame)
+            return True
+
+        cur_time = time()
+
+        is_next_beat = cur_time - self.start_game_time >= self.beat_timings[self.cur_beat]
+        if is_next_beat:
+            self.cur_beat += 1
+
+        is_next_spawn = cur_time - self.last_draw_timestamp >= self.min_spawn_interval
+        if not is_next_spawn:
+            draw_objects(
+                frame, self.DCM.circles, self.PM.packmans, self.MCM.ellipse_curves, self.circle_radius,
+                self.PM.vectors, self.body_part_indexes, landmarks, self.w_size
+            )
+            self.draw_score(frame)
+            return True
+
+        if cur_time - self.last_draw_timestamp < self.min_follow_interval and is_next_beat:
+            self.add_new_circle(follow_last=True)
+        elif is_next_beat:
+            self.add_new_circle()
+
+        if len(self.DCM.circles) == self.max_items:
             log.info("Max items on the screen! You lost!")
             return False
 

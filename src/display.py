@@ -3,12 +3,13 @@ from threading import Thread
 
 import cv2
 import keyboard
+import pyglet
 
 import utils
 from models.intel_pose import IntelPoseModel
 from models.mediapipe_pose import MediapipePoseModel
 from utils import log
-from gameplay import GameWithFriendOpenVINO
+from gameplay import GameWithFriendOpenVINO, SoloMusic
 
 
 class DisplayThread(Thread):
@@ -57,12 +58,26 @@ class DisplayThread(Thread):
             game_status = True
             if self.gui.countdown != 0:
                 self.gui.start_prepare(frame)
-            elif type(self.gui.game_mode) != GameWithFriendOpenVINO:
-                game_status = self.gui.game_mode.process(frame, flipped_joints[0] if len(flipped_joints) != 0 else [])
             else:
-                game_status = self.gui.game_mode.process(frame, flipped_joints)
+                if type(self.gui.game_mode) != GameWithFriendOpenVINO:
+                    game_status = self.gui.game_mode.process(frame, flipped_joints[0] if len(flipped_joints) != 0 else [])
+                else:
+                    game_status = self.gui.game_mode.process(frame, flipped_joints)
 
+                def music_play():
+                    m = pyglet.resource.media('hey.mp3')
+                    m.play()
+                    pyglet.app.run()
+
+                if type(self.gui.game_mode) == SoloMusic:
+                    if not SoloMusic.is_music_playing:
+                        music_thread = Thread(target=music_play)
+                        music_thread.start()
+                        SoloMusic.is_music_playing = True
+                    
             if not game_status:
+                SoloMusic.is_music_playing = False
+                music_thread.stop()
                 self.gui.reset()
         else:
             q = self.gui.process(frame, flipped_joints)
